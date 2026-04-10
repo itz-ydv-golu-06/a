@@ -1,121 +1,116 @@
 <!DOCTYPE html><html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>IBS Hotel Software (Working Demo)</title>
-  <style>
-    body { margin:0; font-family: Arial; background:#f4f6f8; }
-    header { background:#2c3e50; color:#fff; padding:15px; text-align:center; }
-    .container { display:flex; height:calc(100vh - 60px); }
-    .sidebar { width:220px; background:#34495e; color:#fff; padding:10px; }
-    .sidebar button { width:100%; padding:10px; margin:5px 0; border:none; background:#2c3e50; color:#fff; cursor:pointer; }
-    .sidebar button:hover { background:#1abc9c; }
-    .main { flex:1; padding:15px; overflow:auto; }
-    .card { background:#fff; padding:15px; border-radius:8px; margin-bottom:15px; }
-    table { width:100%; border-collapse:collapse; }
-    th,td { padding:10px; border-bottom:1px solid #ddd; }
-    .status { padding:5px 10px; border-radius:5px; color:#fff; }
-    .vacant{background:#27ae60;} .occupied{background:#e74c3c;} .dirty{background:#f39c12;}
-    input { padding:8px; width:200px; }
-  </style>
+<meta charset="UTF-8">
+<title>IBS Clone (Clean UI)</title>
+<style>
+  body{margin:0;font-family:Segoe UI,Arial;background:#e9edf2}
+  .topbar{background:#e74c3c;color:#fff;padding:8px 12px;display:flex;gap:20px;align-items:center}
+  .menu{position:relative;cursor:pointer}
+  .dropdown{display:none;position:absolute;top:28px;left:0;background:#fff;color:#000;min-width:200px;border:1px solid #ccc;z-index:10}
+  .dropdown div{padding:8px;border-bottom:1px solid #eee}
+  .dropdown div:hover{background:#f2f2f2}
+  .menu:hover .dropdown{display:block}.layout{display:flex;height:calc(100vh - 40px)} .sidebar{width:220px;background:#2c3e50;color:#fff;padding:10px} .sidebar div{padding:10px;margin:5px 0;background:#34495e;cursor:pointer} .sidebar div:hover{background:#1abc9c}
+
+.main{flex:1;padding:10px} .panel{background:#fff;padding:10px;border-radius:6px;margin-bottom:10px}
+
+.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px} .room{padding:15px;text-align:center;border-radius:6px;color:#fff;font-weight:bold} .vacant{background:#27ae60} .occupied{background:#e74c3c} .dirty{background:#f39c12}
+
+table{width:100%;border-collapse:collapse} th,td{padding:8px;border:1px solid #ddd} input{padding:6px;margin:5px} </style>
+
 </head>
-<body><header>IBS Hotel Software (Working Demo)</header><div class="container">
-  <div class="sidebar">
-    <button onclick="show('dashboard')">Dashboard</button>
-    <button onclick="show('rooms')">Rooms</button>
-    <button onclick="show('checkin')">Check-In</button>
-    <button onclick="show('checkout')">Check-Out</button>
-  </div>  <div class="main"><div id="dashboard" class="card"></div>
-
-<div id="rooms" class="card" style="display:none;">
-  <h2>Room Status</h2>
-  <table id="roomTable"></table>
-</div>
-
-<div id="checkin" class="card" style="display:none;">
-  <h2>Check-In</h2>
-  <input id="guest" placeholder="Guest Name"><br><br>
-  <input id="roomNo" placeholder="Room No"><br><br>
-  <button onclick="checkIn()">Check-In</button>
-</div>
-
-<div id="checkout" class="card" style="display:none;">
-  <h2>Check-Out</h2>
-  <input id="checkoutRoom" placeholder="Room No"><br><br>
-  <button onclick="checkOut()">Check-Out</button>
-</div>
-
+<body><div class="topbar">
+  <div class="menu">Front Office
+    <div class="dropdown">
+      <div onclick="show('checkin')">Check In</div>
+      <div onclick="show('checkout')">Check Out</div>
+      <div onclick="show('rooms')">Room Calendar</div>
+      <div onclick="show('guests')">Search Guest</div>
+    </div>
   </div>
+  <div>F&B</div>
+  <div>Special Services</div>
+  <div>Account</div>
+  <div>Report</div>
+</div><div class="layout"><div class="sidebar">
+  <div onclick="show('dashboard')">F1 Occupancy</div>
+  <div onclick="show('rooms')">F2 Room Calendar</div>
+  <div onclick="show('checkin')">F6 CheckIn</div>
+  <div onclick="show('checkout')">F7 CheckOut</div>
+</div><div class="main"><div id="dashboard" class="panel"></div><div id="rooms" class="panel" style="display:none">
+  <h3>Room Calendar</h3>
+  <div class="grid" id="roomGrid"></div>
+</div><div id="checkin" class="panel" style="display:none">
+  <h3>Check-In</h3>
+  <input id="guest" placeholder="Guest Name">
+  <input id="roomNo" placeholder="Room No">
+  <button onclick="checkIn()">Submit</button>
+</div><div id="checkout" class="panel" style="display:none">
+  <h3>Check-Out</h3>
+  <input id="checkoutRoom" placeholder="Room No">
+  <button onclick="checkOut()">Submit</button>
+</div><div id="guests" class="panel" style="display:none">
+  <h3>Guest List</h3>
+  <table id="guestTable"></table>
+</div></div>
 </div><script>
+let rooms = JSON.parse(localStorage.getItem('rooms')) || {};
 
-let rooms = JSON.parse(localStorage.getItem('rooms')) || {
-  101:{status:'vacant'},
-  102:{status:'vacant'},
-  103:{status:'dirty'},
-  104:{status:'vacant'},
-  105:{status:'vacant'}
-};
+// init rooms
+for(let i=101;i<=110;i++){
+  if(!rooms[i]) rooms[i]={status:'vacant'};
+}
 
-function save(){ localStorage.setItem('rooms', JSON.stringify(rooms)); }
+function save(){localStorage.setItem('rooms',JSON.stringify(rooms));}
 
 function show(id){
-  document.querySelectorAll('.card').forEach(c=>c.style.display='none');
+  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
   document.getElementById(id).style.display='block';
   load();
 }
 
 function load(){
-  // dashboard
-  let total = Object.keys(rooms).length;
-  let occupied = Object.values(rooms).filter(r=>r.status==='occupied').length;
-  let vacant = Object.values(rooms).filter(r=>r.status==='vacant').length;
-  let dirty = Object.values(rooms).filter(r=>r.status==='dirty').length;
+  let total=Object.keys(rooms).length;
+  let occ=Object.values(rooms).filter(r=>r.status==='occupied').length;
+  let vac=Object.values(rooms).filter(r=>r.status==='vacant').length;
+  let dirty=Object.values(rooms).filter(r=>r.status==='dirty').length;
 
-  document.getElementById('dashboard').innerHTML = `
-    <h2>Dashboard</h2>
-    <p>Total Rooms: ${total}</p>
-    <p>Occupied: ${occupied}</p>
-    <p>Vacant: ${vacant}</p>
-    <p>Dirty: ${dirty}</p>
+  document.getElementById('dashboard').innerHTML=`
+    <h3>Dashboard</h3>
+    Total: ${total} | Occupied: ${occ} | Vacant: ${vac} | Dirty: ${dirty}
   `;
 
-  // table
-  let html = '<tr><th>Room</th><th>Status</th><th>Guest</th></tr>';
+  // grid
+  let grid='';
   for(let r in rooms){
-    let data = rooms[r];
-    html += `<tr>
-      <td>${r}</td>
-      <td><span class="status ${data.status}">${data.status}</span></td>
-      <td>${data.guest || '-'}</td>
-    </tr>`;
+    grid+=<div class="room ${rooms[r].status}">${r}</div>;
   }
-  document.getElementById('roomTable').innerHTML = html;
+  document.getElementById('roomGrid').innerHTML=grid;
+
+  // guest table
+  let html='<tr><th>Room</th><th>Guest</th></tr>';
+  for(let r in rooms){
+    if(rooms[r].guest){
+      html+=<tr><td>${r}</td><td>${rooms[r].guest}</td></tr>;
+    }
+  }
+  document.getElementById('guestTable').innerHTML=html;
 }
 
 function checkIn(){
-  let room = document.getElementById('roomNo').value;
-  let guest = document.getElementById('guest').value;
-
-  if(!rooms[room]) return alert('Room not found');
-  if(rooms[room].status==='occupied') return alert('Already occupied');
-
-  rooms[room] = {status:'occupied', guest:guest};
-  save();
-  alert('Checked In');
-  load();
+  let r=roomNo.value;
+  let g=guest.value;
+  if(!rooms[r]) return alert('Room not found');
+  rooms[r]={status:'occupied',guest:g};
+  save();load();alert('Checked In');
 }
 
 function checkOut(){
-  let room = document.getElementById('checkoutRoom').value;
-
-  if(!rooms[room]) return alert('Room not found');
-
-  rooms[room] = {status:'dirty'};
-  save();
-  alert('Checked Out (Room Dirty)');
-  load();
+  let r=checkoutRoom.value;
+  if(!rooms[r]) return alert('Room not found');
+  rooms[r]={status:'dirty'};
+  save();load();alert('Checked Out');
 }
 
 load();
-
 </script></body>
 </html>
