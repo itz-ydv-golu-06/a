@@ -1,116 +1,1250 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>IBS Clone (Clean UI)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBS Hotel Management System</title>
 <style>
-  body{margin:0;font-family:Segoe UI,Arial;background:#e9edf2}
-  .topbar{background:#e74c3c;color:#fff;padding:8px 12px;display:flex;gap:20px;align-items:center}
-  .menu{position:relative;cursor:pointer}
-  .dropdown{display:none;position:absolute;top:28px;left:0;background:#fff;color:#000;min-width:200px;border:1px solid #ccc;z-index:10}
-  .dropdown div{padding:8px;border-bottom:1px solid #eee}
-  .dropdown div:hover{background:#f2f2f2}
-  .menu:hover .dropdown{display:block}.layout{display:flex;height:calc(100vh - 40px)} .sidebar{width:220px;background:#2c3e50;color:#fff;padding:10px} .sidebar div{padding:10px;margin:5px 0;background:#34495e;cursor:pointer} .sidebar div:hover{background:#1abc9c}
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Titillium+Web:wght@300;400;600;700&display=swap');
 
-.main{flex:1;padding:10px} .panel{background:#fff;padding:10px;border-radius:6px;margin-bottom:10px}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-.grid{display:grid;grid-template-columns:repeat(10,1fr);gap:8px} .room{padding:15px;text-align:center;border-radius:6px;color:#fff;font-weight:bold} .vacant{background:#27ae60} .occupied{background:#e74c3c} .dirty{background:#f39c12}
+  :root {
+    --bg-main: #1a1e2e;
+    --bg-panel: #1f2437;
+    --bg-card: #252b3b;
+    --bg-input: #141824;
+    --border: #2e3650;
+    --border-light: #3a4260;
+    --accent: #00b4d8;
+    --accent-dim: #0077a8;
+    --text-primary: #d0d8f0;
+    --text-secondary: #7a88b8;
+    --text-label: #5a6890;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --yellow: #f1c40f;
+    --orange: #e67e22;
+    --btn-bg: #2a3050;
+    --btn-hover: #323a60;
+    --nav-bg: #141824;
+    --sidebar-bg: #171c2c;
+    --topbar-height: 38px;
+    --sidebar-width: 140px;
+  }
 
-table{width:100%;border-collapse:collapse} th,td{padding:8px;border:1px solid #ddd} input{padding:6px;margin:5px} </style>
+  html, body {
+    height: 100%;
+    font-family: 'Titillium Web', sans-serif;
+    background: var(--bg-main);
+    color: var(--text-primary);
+    font-size: 13px;
+    overflow: hidden;
+  }
 
+  /* TOP NAV */
+  #topbar {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--topbar-height);
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: stretch;
+    z-index: 1000;
+    user-select: none;
+  }
+  .topbar-brand {
+    display: flex; align-items: center;
+    padding: 0 16px;
+    border-right: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 15px;
+    color: var(--accent);
+    letter-spacing: 2px;
+    min-width: 160px;
+  }
+  .topbar-brand span { color: var(--text-secondary); font-size: 10px; margin-left: 6px; letter-spacing: 1px; }
+  .nav-menu { display: flex; align-items: stretch; flex: 1; }
+  .nav-item {
+    position: relative;
+    display: flex; align-items: center;
+    padding: 0 14px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    letter-spacing: 0.5px;
+    border-right: 1px solid var(--border);
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  .nav-item:hover, .nav-item.active { background: #1e2440; color: var(--text-primary); }
+  .nav-item.logout { margin-left: auto; color: #c0392b; border-left: 1px solid var(--border); border-right: none; }
+  .nav-item.logout:hover { background: #2a1a1a; }
+  .nav-item .arrow { margin-left: 5px; font-size: 9px; color: var(--text-label); }
+
+  .dropdown {
+    display: none;
+    position: absolute;
+    top: 100%; left: 0;
+    background: var(--nav-bg);
+    border: 1px solid var(--border-light);
+    min-width: 170px;
+    z-index: 2000;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .nav-item:hover .dropdown { display: block; }
+  .dropdown-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    color: var(--text-secondary);
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.1s, color 0.1s;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .dropdown-item:last-child { border-bottom: none; }
+  .dropdown-item:hover { background: #1e2a40; color: var(--accent); }
+  .dropdown-item .di-icon { font-size: 11px; width: 14px; text-align: center; }
+
+  /* TIME */
+  #clock {
+    display: flex; align-items: center;
+    padding: 0 14px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    border-left: 1px solid var(--border);
+    letter-spacing: 1px;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    position: fixed; top: var(--topbar-height); left: 0; bottom: 0;
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--border);
+    padding: 8px 0;
+    z-index: 100;
+    display: flex; flex-direction: column;
+    gap: 3px;
+  }
+  .sidebar-label {
+    padding: 6px 10px 4px;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: var(--text-label);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+  .sidebar-btn {
+    margin: 0 6px;
+    padding: 7px 8px;
+    background: var(--btn-bg);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'Titillium Web', sans-serif;
+    font-weight: 600;
+    display: flex; align-items: center; gap: 7px;
+    transition: background 0.1s, color 0.1s, border-color 0.1s;
+    letter-spacing: 0.3px;
+  }
+  .sidebar-btn:hover { background: var(--btn-hover); color: var(--text-primary); border-color: var(--accent); }
+  .sidebar-btn .fkey {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    background: #0a1020;
+    padding: 1px 4px;
+    border: 1px solid var(--accent-dim);
+    min-width: 22px;
+    text-align: center;
+  }
+
+  /* MAIN CONTENT */
+  #main {
+    position: fixed;
+    top: var(--topbar-height);
+    left: var(--sidebar-width);
+    right: 0; bottom: 0;
+    overflow-y: auto;
+    padding: 12px;
+    background: var(--bg-main);
+  }
+
+  /* SECTIONS */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* SECTION HEADER */
+  .sec-header {
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  .sec-title {
+    font-size: 14px; font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .sec-title::before {
+    content: '';
+    display: inline-block;
+    width: 3px; height: 16px;
+    background: var(--accent);
+  }
+  .sec-sub { font-size: 11px; color: var(--text-label); }
+
+  /* DASHBOARD CARDS */
+  .dash-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .dash-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .dash-card::after {
+    content: '';
+    position: absolute; top: 0; left: 0;
+    width: 3px; height: 100%;
+  }
+  .dash-card.total::after { background: var(--accent); }
+  .dash-card.occupied::after { background: var(--red); }
+  .dash-card.vacant::after { background: var(--green); }
+  .dash-card.dirty::after { background: var(--yellow); }
+  .dash-card-label { font-size: 10px; letter-spacing: 1.5px; color: var(--text-label); font-weight: 600; text-transform: uppercase; margin-bottom: 6px; }
+  .dash-card-value { font-family: 'Share Tech Mono', monospace; font-size: 32px; color: var(--text-primary); line-height: 1; }
+  .dash-card.total .dash-card-value { color: var(--accent); }
+  .dash-card.occupied .dash-card-value { color: var(--red); }
+  .dash-card.vacant .dash-card-value { color: var(--green); }
+  .dash-card.dirty .dash-card-value { color: var(--yellow); }
+  .dash-card-sub { font-size: 10px; color: var(--text-label); margin-top: 4px; }
+
+  /* ROOM CALENDAR */
+  .floor-block { margin-bottom: 14px; }
+  .floor-label {
+    font-size: 10px; letter-spacing: 1.5px; color: var(--text-label);
+    font-weight: 600; text-transform: uppercase;
+    margin-bottom: 6px; padding-bottom: 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .room-grid { display: flex; flex-wrap: wrap; gap: 5px; }
+  .room-cell {
+    width: 68px; height: 50px;
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    transition: transform 0.1s, box-shadow 0.1s;
+    position: relative;
+  }
+  .room-cell:hover { transform: scale(1.05); box-shadow: 0 0 10px rgba(0,0,0,0.5); z-index: 1; }
+  .room-cell .room-num { font-size: 14px; line-height: 1; }
+  .room-cell .room-status-lbl { font-size: 8px; letter-spacing: 1px; margin-top: 3px; font-family: 'Titillium Web', sans-serif; font-weight: 600; }
+  .room-cell.vacant { background: #0d2b1d; border-color: #1a4a30; color: var(--green); }
+  .room-cell.occupied { background: #2b0d0d; border-color: #4a1a1a; color: #ff7b7b; }
+  .room-cell.dirty { background: #2b2200; border-color: #4a3a00; color: var(--yellow); }
+
+  .legend { display: flex; gap: 14px; margin-bottom: 10px; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-secondary); }
+  .legend-dot { width: 12px; height: 12px; border: 1px solid; }
+  .legend-dot.vacant { background: #0d2b1d; border-color: #1a4a30; }
+  .legend-dot.occupied { background: #2b0d0d; border-color: #4a1a1a; }
+  .legend-dot.dirty { background: #2b2200; border-color: #4a3a00; }
+
+  /* FORMS */
+  .form-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    max-width: 520px;
+  }
+  .form-panel-title {
+    font-size: 12px; font-weight: 700; letter-spacing: 1px;
+    color: var(--text-secondary); text-transform: uppercase;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .form-row { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .form-label { font-size: 11px; color: var(--text-label); font-weight: 600; letter-spacing: 0.5px; text-align: right; }
+  .form-input, .form-select {
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 5px 8px;
+    font-size: 12px;
+    font-family: 'Titillium Web', sans-serif;
+    outline: none;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--accent); }
+  .form-input::placeholder { color: var(--text-label); }
+  .form-select option { background: var(--bg-input); }
+
+  .form-actions { display: flex; gap: 6px; margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--border); justify-content: flex-end; }
+  .btn {
+    padding: 6px 16px;
+    border: 1px solid;
+    cursor: pointer;
+    font-size: 11px;
+    font-family: 'Titillium Web', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn-primary { background: #0a2a3a; border-color: var(--accent); color: var(--accent); }
+  .btn-primary:hover { background: var(--accent); color: #000; }
+  .btn-danger { background: #2a0a0a; border-color: var(--red); color: var(--red); }
+  .btn-danger:hover { background: var(--red); color: #fff; }
+  .btn-secondary { background: var(--btn-bg); border-color: var(--border-light); color: var(--text-secondary); }
+  .btn-secondary:hover { background: var(--btn-hover); color: var(--text-primary); }
+
+  /* STATUS MESSAGE */
+  .status-msg {
+    margin-top: 10px; padding: 7px 12px;
+    font-size: 11px; font-weight: 600;
+    display: none; letter-spacing: 0.5px;
+  }
+  .status-msg.success { background: #0a2b1a; border: 1px solid #1a4a2a; color: var(--green); }
+  .status-msg.error { background: #2b0a0a; border: 1px solid #4a1a1a; color: #ff7b7b; }
+
+  /* GUEST LIST */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    text-align: left;
+    font-size: 10px; letter-spacing: 1.2px;
+    color: var(--text-label); text-transform: uppercase;
+    font-weight: 700;
+  }
+  .data-table td {
+    border: 1px solid var(--border);
+    padding: 7px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--bg-panel);
+  }
+  .data-table tr:hover td { background: var(--bg-card); color: var(--text-primary); }
+  .data-table .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 0.8px;
+  }
+  .badge-occupied { background: #2b0d0d; border: 1px solid #4a1a1a; color: #ff7b7b; }
+  .badge-dirty { background: #2b2200; border: 1px solid #4a3a00; color: var(--yellow); }
+
+  /* OCCUPANCY LIST */
+  .occ-table-wrap { overflow: auto; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg-main); }
+  ::-webkit-scrollbar-thumb { background: var(--border-light); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent-dim); }
+
+  /* STATUSBAR */
+  #statusbar {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    height: 22px;
+    background: var(--nav-bg);
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 0;
+    z-index: 1000;
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .sb-seg {
+    padding: 0 12px; height: 100%;
+    display: flex; align-items: center;
+    border-right: 1px solid var(--border);
+    color: var(--text-label);
+    letter-spacing: 0.5px;
+  }
+  .sb-seg.active-seg { color: var(--accent); }
+  #sb-section { color: var(--text-secondary); }
+
+  /* MODAL */
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 3000;
+    align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border-light);
+    padding: 20px;
+    min-width: 340px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  }
+  .modal-title {
+    font-size: 13px; font-weight: 700;
+    color: var(--text-primary); letter-spacing: 1px;
+    margin-bottom: 14px; padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    text-transform: uppercase;
+  }
+  .modal-body { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+  .modal-body strong { color: var(--text-primary); }
+  .modal-actions { display: flex; gap: 6px; justify-content: flex-end; }
+
+  /* RESERVATION */
+  .res-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .res-col { background: var(--bg-card); border: 1px solid var(--border); padding: 14px; }
+  .res-col-title { font-size: 10px; letter-spacing: 1.2px; color: var(--text-label); font-weight: 700; text-transform: uppercase; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+
+  /* OCCUPANCY STATS BAR */
+  .occ-bar-wrap { margin-bottom: 14px; background: var(--bg-card); border: 1px solid var(--border); padding: 10px 14px; }
+  .occ-bar-label { font-size: 10px; letter-spacing: 1px; color: var(--text-label); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+  .occ-bar { height: 10px; background: var(--bg-input); display: flex; overflow: hidden; }
+  .occ-bar-fill { height: 100%; transition: width 0.4s; }
+  .occ-bar-fill.occ { background: var(--red); }
+  .occ-bar-fill.dirty { background: var(--yellow); }
+  .occ-bar-fill.vac { background: var(--green); }
+  .occ-bar-legend { display: flex; gap: 14px; margin-top: 6px; }
+  .obl { font-size: 10px; color: var(--text-secondary); display: flex; align-items: center; gap: 4px; }
+  .obl-dot { width: 8px; height: 8px; }
+
+</style>
 </head>
-<body><div class="topbar">
-  <div class="menu">Front Office
-    <div class="dropdown">
-      <div onclick="show('checkin')">Check In</div>
-      <div onclick="show('checkout')">Check Out</div>
-      <div onclick="show('rooms')">Room Calendar</div>
-      <div onclick="show('guests')">Search Guest</div>
+<body>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="topbar-brand">IBS-HMS <span>v4.2</span></div>
+  <nav class="nav-menu">
+    <div class="nav-item" onclick="showSection('dashboard')">Dashboard</div>
+
+    <div class="nav-item">
+      Front Office <span class="arrow">▾</span>
+      <div class="dropdown">
+        <div class="dropdown-item" onclick="showSection('reservation')"><span class="di-icon">📋</span> Reservation</div>
+        <div class="dropdown-item" onclick="showSection('checkin')"><span class="di-icon">➡️</span> Check-In</div>
+        <div class="dropdown-item" onclick="showSection('checkout')"><span class="di-icon">⬅️</span> Check-Out</div>
+        <div class="dropdown-item" onclick="showSection('roomcalendar')"><span class="di-icon">🗓</span> Room Calendar</div>
+        <div class="dropdown-item" onclick="showSection('guestlist')"><span class="di-icon">👥</span> Search Guest</div>
+      </div>
+    </div>
+
+    <div class="nav-item">F&amp;B <span class="arrow">▾</span>
+      <div class="dropdown">
+        <div class="dropdown-item"><span class="di-icon">🍽</span> Restaurant Orders</div>
+        <div class="dropdown-item"><span class="di-icon">🍹</span> Bar Orders</div>
+        <div class="dropdown-item"><span class="di-icon">📊</span> F&amp;B Report</div>
+      </div>
+    </div>
+
+    <div class="nav-item">Special Services <span class="arrow">▾</span>
+      <div class="dropdown">
+        <div class="dropdown-item"><span class="di-icon">🧺</span> Laundry</div>
+        <div class="dropdown-item"><span class="di-icon">💆</span> Spa</div>
+        <div class="dropdown-item"><span class="di-icon">🚗</span> Transport</div>
+      </div>
+    </div>
+
+    <div class="nav-item">Account <span class="arrow">▾</span>
+      <div class="dropdown">
+        <div class="dropdown-item"><span class="di-icon">💳</span> Guest Ledger</div>
+        <div class="dropdown-item"><span class="di-icon">💰</span> City Ledger</div>
+        <div class="dropdown-item"><span class="di-icon">📑</span> Invoices</div>
+      </div>
+    </div>
+
+    <div class="nav-item">Report <span class="arrow">▾</span>
+      <div class="dropdown">
+        <div class="dropdown-item" onclick="showSection('occupancy')"><span class="di-icon">📈</span> Occupancy Report</div>
+        <div class="dropdown-item"><span class="di-icon">📉</span> Revenue Report</div>
+        <div class="dropdown-item"><span class="di-icon">🗂</span> Night Audit</div>
+      </div>
+    </div>
+
+    <div class="nav-item logout" onclick="confirmLogout()">⏻ Logout</div>
+  </nav>
+  <div id="clock">--:--:--</div>
+</div>
+
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sidebar-label">Shortcuts</div>
+  <button class="sidebar-btn" onclick="showSection('occupancy')"><span class="fkey">F1</span> Occupancy List</button>
+  <button class="sidebar-btn" onclick="showSection('roomcalendar')"><span class="fkey">F2</span> Room Calendar</button>
+  <button class="sidebar-btn" onclick="showSection('checkin')"><span class="fkey">F6</span> Check-In</button>
+  <button class="sidebar-btn" onclick="showSection('checkout')"><span class="fkey">F7</span> Check-Out</button>
+  <button class="sidebar-btn" onclick="showSection('guestlist')"><span class="fkey">F9</span> Guest List</button>
+  <button class="sidebar-btn" onclick="showSection('reservation')"><span class="fkey">F10</span> Reservation</button>
+</div>
+
+<!-- MAIN -->
+<div id="main">
+
+  <!-- DASHBOARD -->
+  <div id="sec-dashboard" class="section active">
+    <div class="sec-header">
+      <div class="sec-title">Dashboard — Hotel Overview</div>
+      <div class="sec-sub" id="dash-date"></div>
+    </div>
+    <div class="dash-grid">
+      <div class="dash-card total">
+        <div class="dash-card-label">Total Rooms</div>
+        <div class="dash-card-value" id="dc-total">0</div>
+        <div class="dash-card-sub">Configured rooms</div>
+      </div>
+      <div class="dash-card occupied">
+        <div class="dash-card-label">Occupied</div>
+        <div class="dash-card-value" id="dc-occ">0</div>
+        <div class="dash-card-sub">Currently checked-in</div>
+      </div>
+      <div class="dash-card vacant">
+        <div class="dash-card-label">Vacant</div>
+        <div class="dash-card-value" id="dc-vac">0</div>
+        <div class="dash-card-sub">Available to assign</div>
+      </div>
+      <div class="dash-card dirty">
+        <div class="dash-card-label">Dirty</div>
+        <div class="dash-card-value" id="dc-dirty">0</div>
+        <div class="dash-card-sub">Pending housekeeping</div>
+      </div>
+    </div>
+
+    <div class="occ-bar-wrap">
+      <div class="occ-bar-label">Room Status Distribution</div>
+      <div class="occ-bar" id="occ-bar">
+        <div class="occ-bar-fill occ" id="occ-bar-occ" style="width:0%"></div>
+        <div class="occ-bar-fill dirty" id="occ-bar-dirty" style="width:0%"></div>
+        <div class="occ-bar-fill vac" id="occ-bar-vac" style="width:0%"></div>
+      </div>
+      <div class="occ-bar-legend">
+        <span class="obl"><span class="obl-dot" style="background:var(--red)"></span>Occupied</span>
+        <span class="obl"><span class="obl-dot" style="background:var(--yellow)"></span>Dirty</span>
+        <span class="obl"><span class="obl-dot" style="background:var(--green)"></span>Vacant</span>
+      </div>
+    </div>
+
+    <div style="background:var(--bg-card);border:1px solid var(--border);padding:12px;margin-top:10px;">
+      <div style="font-size:10px;letter-spacing:1.2px;color:var(--text-label);font-weight:700;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border);">Recent Activity</div>
+      <div id="activity-log" style="font-size:11px;color:var(--text-secondary);line-height:2;">
+        <em style="color:var(--text-label)">No recent activity.</em>
+      </div>
     </div>
   </div>
-  <div>F&B</div>
-  <div>Special Services</div>
-  <div>Account</div>
-  <div>Report</div>
-</div><div class="layout"><div class="sidebar">
-  <div onclick="show('dashboard')">F1 Occupancy</div>
-  <div onclick="show('rooms')">F2 Room Calendar</div>
-  <div onclick="show('checkin')">F6 CheckIn</div>
-  <div onclick="show('checkout')">F7 CheckOut</div>
-</div><div class="main"><div id="dashboard" class="panel"></div><div id="rooms" class="panel" style="display:none">
-  <h3>Room Calendar</h3>
-  <div class="grid" id="roomGrid"></div>
-</div><div id="checkin" class="panel" style="display:none">
-  <h3>Check-In</h3>
-  <input id="guest" placeholder="Guest Name">
-  <input id="roomNo" placeholder="Room No">
-  <button onclick="checkIn()">Submit</button>
-</div><div id="checkout" class="panel" style="display:none">
-  <h3>Check-Out</h3>
-  <input id="checkoutRoom" placeholder="Room No">
-  <button onclick="checkOut()">Submit</button>
-</div><div id="guests" class="panel" style="display:none">
-  <h3>Guest List</h3>
-  <table id="guestTable"></table>
-</div></div>
-</div><script>
-let rooms = JSON.parse(localStorage.getItem('rooms')) || {};
 
-// init rooms
-for(let i=101;i<=110;i++){
-  if(!rooms[i]) rooms[i]={status:'vacant'};
-}
+  <!-- ROOM CALENDAR -->
+  <div id="sec-roomcalendar" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Room Calendar</div>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot vacant"></div>Vacant</div>
+        <div class="legend-item"><div class="legend-dot occupied"></div>Occupied</div>
+        <div class="legend-item"><div class="legend-dot dirty"></div>Dirty (Clean Required)</div>
+      </div>
+    </div>
+    <div id="room-calendar-grid"></div>
+  </div>
 
-function save(){localStorage.setItem('rooms',JSON.stringify(rooms));}
+  <!-- CHECK-IN -->
+  <div id="sec-checkin" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Check-In</div>
+      <div class="sec-sub">Register guest arrival</div>
+    </div>
+    <div class="form-panel">
+      <div class="form-panel-title">Guest Check-In Form</div>
+      <div class="form-row">
+        <label class="form-label">Guest Name</label>
+        <input class="form-input" id="ci-name" type="text" placeholder="Full name of guest" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Room Number</label>
+        <select class="form-select" id="ci-room"></select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">ID / Passport</label>
+        <input class="form-input" id="ci-id" type="text" placeholder="ID or Passport number" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Nationality</label>
+        <input class="form-input" id="ci-nat" type="text" placeholder="Country" autocomplete="off">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Adults / Children</label>
+        <div style="display:flex;gap:6px;">
+          <input class="form-input" id="ci-adults" type="number" min="1" value="1" style="width:80px;">
+          <input class="form-input" id="ci-children" type="number" min="0" value="0" style="width:80px;">
+        </div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Expected Checkout</label>
+        <input class="form-input" id="ci-cout" type="date">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Rate / Night (USD)</label>
+        <input class="form-input" id="ci-rate" type="number" min="0" value="0" placeholder="0.00">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="resetCheckinForm()">Clear</button>
+        <button class="btn btn-primary" onclick="doCheckin()">✔ Save Check-In</button>
+      </div>
+      <div class="status-msg" id="ci-msg"></div>
+    </div>
+  </div>
 
-function show(id){
-  document.querySelectorAll('.panel').forEach(p=>p.style.display='none');
-  document.getElementById(id).style.display='block';
-  load();
-}
+  <!-- CHECK-OUT -->
+  <div id="sec-checkout" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Check-Out</div>
+      <div class="sec-sub">Process guest departure</div>
+    </div>
+    <div class="form-panel">
+      <div class="form-panel-title">Guest Check-Out Form</div>
+      <div class="form-row">
+        <label class="form-label">Room Number</label>
+        <select class="form-select" id="co-room"></select>
+      </div>
+      <div id="co-guest-info" style="display:none;margin:10px 0;padding:10px;background:var(--bg-input);border:1px solid var(--border);font-size:12px;">
+        <div style="color:var(--text-label);margin-bottom:4px;">Guest on record:</div>
+        <div id="co-guest-detail" style="color:var(--text-primary);font-weight:600;"></div>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Charges (USD)</label>
+        <input class="form-input" id="co-charges" type="number" min="0" value="0" placeholder="0.00">
+      </div>
+      <div class="form-row">
+        <label class="form-label">Payment Method</label>
+        <select class="form-select" id="co-pay">
+          <option>Cash</option>
+          <option>Credit Card</option>
+          <option>Bank Transfer</option>
+          <option>City Ledger</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="form-label">Remarks</label>
+        <input class="form-input" id="co-remarks" type="text" placeholder="Optional remarks">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" onclick="resetCheckoutForm()">Clear</button>
+        <button class="btn btn-danger" onclick="doCheckout()">⬅ Process Check-Out</button>
+      </div>
+      <div class="status-msg" id="co-msg"></div>
+    </div>
+  </div>
 
-function load(){
-  let total=Object.keys(rooms).length;
-  let occ=Object.values(rooms).filter(r=>r.status==='occupied').length;
-  let vac=Object.values(rooms).filter(r=>r.status==='vacant').length;
-  let dirty=Object.values(rooms).filter(r=>r.status==='dirty').length;
+  <!-- GUEST LIST -->
+  <div id="sec-guestlist" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Search Guest / In-House List</div>
+      <div class="sec-sub">All currently checked-in guests</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;">
+      <input class="form-input" id="gl-search" type="text" placeholder="Search by name or room..." oninput="renderGuestList()" style="max-width:260px;">
+      <button class="btn btn-secondary" onclick="renderGuestList()">🔍 Search</button>
+    </div>
+    <div class="occ-table-wrap">
+      <table class="data-table" id="guest-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Room</th>
+            <th>Guest Name</th>
+            <th>ID / Passport</th>
+            <th>Nationality</th>
+            <th>Adults/Children</th>
+            <th>Check-In Date</th>
+            <th>Expected C/O</th>
+            <th>Rate</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="guest-tbody"></tbody>
+      </table>
+    </div>
+  </div>
 
-  document.getElementById('dashboard').innerHTML=`
-    <h3>Dashboard</h3>
-    Total: ${total} | Occupied: ${occ} | Vacant: ${vac} | Dirty: ${dirty}
-  `;
+  <!-- OCCUPANCY LIST -->
+  <div id="sec-occupancy" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Occupancy List</div>
+      <div class="sec-sub">Full room status overview</div>
+    </div>
+    <div class="occ-table-wrap">
+      <table class="data-table" id="occ-table">
+        <thead>
+          <tr>
+            <th>Room</th>
+            <th>Type</th>
+            <th>Floor</th>
+            <th>Status</th>
+            <th>Guest</th>
+            <th>Check-In</th>
+            <th>Check-Out</th>
+          </tr>
+        </thead>
+        <tbody id="occ-tbody"></tbody>
+      </table>
+    </div>
+  </div>
 
-  // grid
-  let grid='';
-  for(let r in rooms){
-    grid+=<div class="room ${rooms[r].status}">${r}</div>;
+  <!-- RESERVATION -->
+  <div id="sec-reservation" class="section">
+    <div class="sec-header">
+      <div class="sec-title">Reservation</div>
+      <div class="sec-sub">Advance booking management</div>
+    </div>
+    <div class="res-grid">
+      <div class="res-col">
+        <div class="res-col-title">New Reservation</div>
+        <div class="form-row"><label class="form-label">Guest Name</label><input class="form-input" id="res-name" placeholder="Full name"></div>
+        <div class="form-row"><label class="form-label">Room Number</label>
+          <select class="form-select" id="res-room"></select>
+        </div>
+        <div class="form-row"><label class="form-label">Arrival Date</label><input class="form-input" id="res-arr" type="date"></div>
+        <div class="form-row"><label class="form-label">Departure Date</label><input class="form-input" id="res-dep" type="date"></div>
+        <div class="form-row"><label class="form-label">Contact</label><input class="form-input" id="res-contact" placeholder="Phone or email"></div>
+        <div class="form-row"><label class="form-label">Adults</label><input class="form-input" id="res-adults" type="number" min="1" value="1" style="max-width:80px;"></div>
+        <div class="form-actions" style="justify-content:flex-start">
+          <button class="btn btn-primary" onclick="saveReservation()">📋 Save Reservation</button>
+        </div>
+        <div class="status-msg" id="res-msg"></div>
+      </div>
+      <div class="res-col">
+        <div class="res-col-title">Pending Reservations</div>
+        <table class="data-table" style="width:100%">
+          <thead><tr><th>Guest</th><th>Room</th><th>Arrival</th><th>Dep.</th><th>Action</th></tr></thead>
+          <tbody id="res-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <div class="sb-seg active-seg">IBS-HMS v4.2</div>
+  <div class="sb-seg" id="sb-section">Dashboard</div>
+  <div class="sb-seg" id="sb-user">USER: FRONTDESK</div>
+  <div class="sb-seg" id="sb-date"></div>
+</div>
+
+<!-- ROOM INFO MODAL -->
+<div class="modal-overlay" id="room-modal">
+  <div class="modal-box">
+    <div class="modal-title" id="rm-title">Room Info</div>
+    <div class="modal-body" id="rm-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('room-modal')">Close</button>
+      <button class="btn btn-primary" id="rm-action-btn"></button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGOUT MODAL -->
+<div class="modal-overlay" id="logout-modal">
+  <div class="modal-box">
+    <div class="modal-title">Confirm Logout</div>
+    <div class="modal-body">Are you sure you want to logout from IBS Hotel Management System?</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal('logout-modal')">Cancel</button>
+      <button class="btn btn-danger" onclick="closeModal('logout-modal')">Logout</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== DATA =====================
+
+const ROOMS_DEF = [
+  // Floor 1
+  {num:'101',type:'Standard',floor:1},{num:'102',type:'Standard',floor:1},
+  {num:'103',type:'Standard',floor:1},{num:'104',type:'Standard',floor:1},
+  {num:'105',type:'Deluxe',floor:1},{num:'106',type:'Deluxe',floor:1},
+  {num:'107',type:'Standard',floor:1},{num:'108',type:'Standard',floor:1},
+  // Floor 2
+  {num:'201',type:'Standard',floor:2},{num:'202',type:'Standard',floor:2},
+  {num:'203',type:'Deluxe',floor:2},{num:'204',type:'Deluxe',floor:2},
+  {num:'205',type:'Standard',floor:2},{num:'206',type:'Standard',floor:2},
+  {num:'207',type:'Suite',floor:2},{num:'208',type:'Suite',floor:2},
+  // Floor 3
+  {num:'301',type:'Deluxe',floor:3},{num:'302',type:'Deluxe',floor:3},
+  {num:'303',type:'Deluxe',floor:3},{num:'304',type:'Deluxe',floor:3},
+  {num:'305',type:'Suite',floor:3},{num:'306',type:'Suite',floor:3},
+  {num:'307',type:'Suite',floor:3},{num:'308',type:'Presidential',floor:3},
+];
+
+function loadRooms() {
+  let r = localStorage.getItem('ibs_rooms');
+  if (!r) {
+    let rooms = {};
+    ROOMS_DEF.forEach(rd => {
+      rooms[rd.num] = { ...rd, status: 'vacant', guest: null };
+    });
+    saveRooms(rooms);
+    return rooms;
   }
-  document.getElementById('roomGrid').innerHTML=grid;
+  return JSON.parse(r);
+}
+function saveRooms(rooms) { localStorage.setItem('ibs_rooms', JSON.stringify(rooms)); }
 
-  // guest table
-  let html='<tr><th>Room</th><th>Guest</th></tr>';
-  for(let r in rooms){
-    if(rooms[r].guest){
-      html+=<tr><td>${r}</td><td>${rooms[r].guest}</td></tr>;
+function loadGuests() {
+  let g = localStorage.getItem('ibs_guests');
+  return g ? JSON.parse(g) : {};
+}
+function saveGuests(guests) { localStorage.setItem('ibs_guests', JSON.stringify(guests)); }
+
+function loadReservations() {
+  let r = localStorage.getItem('ibs_reservations');
+  return r ? JSON.parse(r) : [];
+}
+function saveReservations(res) { localStorage.setItem('ibs_reservations', JSON.stringify(res)); }
+
+function loadActivity() {
+  let a = localStorage.getItem('ibs_activity');
+  return a ? JSON.parse(a) : [];
+}
+function saveActivity(a) { localStorage.setItem('ibs_activity', JSON.stringify(a)); }
+function addActivity(msg) {
+  let a = loadActivity();
+  const now = new Date();
+  const ts = now.toLocaleString();
+  a.unshift([${ts}] ${msg});
+  if (a.length > 15) a = a.slice(0, 15);
+  saveActivity(a);
+}
+
+// ===================== NAVIGATION =====================
+
+const SECTION_NAMES = {
+  dashboard: 'Dashboard',
+  roomcalendar: 'Room Calendar',
+  checkin: 'Check-In',
+  checkout: 'Check-Out',
+  guestlist: 'Guest List',
+  occupancy: 'Occupancy List',
+  reservation: 'Reservation',
+};
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const el = document.getElementById('sec-' + id);
+  if (el) el.classList.add('active');
+  document.getElementById('sb-section').textContent = SECTION_NAMES[id] || id;
+
+  if (id === 'dashboard') renderDashboard();
+  if (id === 'roomcalendar') renderRoomCalendar();
+  if (id === 'checkin') populateCheckinRoom();
+  if (id === 'checkout') populateCheckoutRoom();
+  if (id === 'guestlist') renderGuestList();
+  if (id === 'occupancy') renderOccupancy();
+  if (id === 'reservation') { populateResRoom(); renderReservations(); }
+}
+
+// ===================== DASHBOARD =====================
+
+function renderDashboard() {
+  const rooms = loadRooms();
+  const all = Object.values(rooms);
+  const total = all.length;
+  const occ = all.filter(r => r.status === 'occupied').length;
+  const dirty = all.filter(r => r.status === 'dirty').length;
+  const vac = total - occ - dirty;
+
+  document.getElementById('dc-total').textContent = total;
+  document.getElementById('dc-occ').textContent = occ;
+  document.getElementById('dc-vac').textContent = vac;
+  document.getElementById('dc-dirty').textContent = dirty;
+
+  document.getElementById('occ-bar-occ').style.width = (occ/total*100).toFixed(1) + '%';
+  document.getElementById('occ-bar-dirty').style.width = (dirty/total*100).toFixed(1) + '%';
+  document.getElementById('occ-bar-vac').style.width = (vac/total*100).toFixed(1) + '%';
+
+  // date
+  document.getElementById('dash-date').textContent = new Date().toDateString();
+
+  // activity
+  const acts = loadActivity();
+  const el = document.getElementById('activity-log');
+  if (acts.length === 0) {
+    el.innerHTML = '<em style="color:var(--text-label)">No recent activity.</em>';
+  } else {
+    el.innerHTML = acts.map(a => <div style="border-bottom:1px solid var(--border);padding:3px 0;">${a}</div>).join('');
+  }
+}
+
+// ===================== ROOM CALENDAR =====================
+
+function renderRoomCalendar() {
+  const rooms = loadRooms();
+  const floors = {};
+  Object.values(rooms).forEach(r => {
+    if (!floors[r.floor]) floors[r.floor] = [];
+    floors[r.floor].push(r);
+  });
+
+  const grid = document.getElementById('room-calendar-grid');
+  grid.innerHTML = '';
+
+  Object.keys(floors).sort().forEach(fl => {
+    const block = document.createElement('div');
+    block.className = 'floor-block';
+    block.innerHTML = <div class="floor-label">Floor ${fl}</div><div class="room-grid" id="rg-floor-${fl}"></div>;
+    grid.appendChild(block);
+
+    const rg = block.querySelector('.room-grid');
+    floors[fl].forEach(room => {
+      const cell = document.createElement('div');
+      cell.className = room-cell ${room.status};
+      const statusText = { vacant: 'VACANT', occupied: 'OCC', dirty: 'DIRTY' }[room.status] || room.status.toUpperCase();
+      cell.innerHTML = <div class="room-num">${room.num}</div><div class="room-status-lbl">${statusText}</div>;
+      cell.title = Room ${room.num} — ${room.type} — ${room.status.toUpperCase()}${room.guest ? ' — ' + room.guest : ''};
+      cell.onclick = () => openRoomModal(room.num);
+      rg.appendChild(cell);
+    });
+  });
+}
+
+function openRoomModal(roomNum) {
+  const rooms = loadRooms();
+  const room = rooms[roomNum];
+  const modal = document.getElementById('room-modal');
+  document.getElementById('rm-title').textContent = Room ${room.num} — ${room.type};
+
+  let info = <strong>Status:</strong> ${room.status.toUpperCase()}<br>;
+  info += <strong>Floor:</strong> ${room.floor}<br>;
+  info += <strong>Type:</strong> ${room.type}<br>;
+  if (room.guest) {
+    info += <strong>Guest:</strong> ${room.guest}<br>;
+    const guests = loadGuests();
+    const g = guests[roomNum];
+    if (g) {
+      info += <strong>Check-In:</strong> ${g.checkinDate}<br>;
+      info += <strong>Expected C/O:</strong> ${g.checkout || '—'}<br>;
     }
   }
-  document.getElementById('guestTable').innerHTML=html;
+
+  document.getElementById('rm-body').innerHTML = info;
+
+  const btn = document.getElementById('rm-action-btn');
+  if (room.status === 'occupied') {
+    btn.textContent = '⬅ Check-Out';
+    btn.className = 'btn btn-danger';
+    btn.onclick = () => { closeModal('room-modal'); showSection('checkout'); document.getElementById('co-room').value = roomNum; updateCoGuestInfo(); };
+  } else if (room.status === 'dirty') {
+    btn.textContent = '✔ Mark Clean';
+    btn.className = 'btn btn-primary';
+    btn.onclick = () => { rooms[roomNum].status = 'vacant'; saveRooms(rooms); addActivity(Room ${roomNum} marked as Clean/Vacant.); closeModal('room-modal'); renderRoomCalendar(); renderDashboard(); };
+  } else {
+    btn.textContent = '➡ Check-In';
+    btn.className = 'btn btn-primary';
+    btn.onclick = () => { closeModal('room-modal'); showSection('checkin'); document.getElementById('ci-room').value = roomNum; };
+  }
+
+  modal.classList.add('open');
 }
 
-function checkIn(){
-  let r=roomNo.value;
-  let g=guest.value;
-  if(!rooms[r]) return alert('Room not found');
-  rooms[r]={status:'occupied',guest:g};
-  save();load();alert('Checked In');
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===================== CHECK-IN =====================
+
+function populateCheckinRoom() {
+  const rooms = loadRooms();
+  const sel = document.getElementById('ci-room');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  const vacant = Object.values(rooms).filter(r => r.status === 'vacant');
+  if (vacant.length === 0) {
+    sel.innerHTML = '<option value="">-- No vacant rooms --</option>';
+    return;
+  }
+  vacant.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.num;
+    o.textContent = ${r.num} — ${r.type} (Floor ${r.floor});
+    sel.appendChild(o);
+  });
+  if (prev) sel.value = prev;
+
+  // default checkout date = tomorrow
+  const tomorrow = new Date();
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  document.getElementById('ci-cout').value = tomorrow.toISOString().split('T')[0];
 }
 
-function checkOut(){
-  let r=checkoutRoom.value;
-  if(!rooms[r]) return alert('Room not found');
-  rooms[r]={status:'dirty'};
-  save();load();alert('Checked Out');
+function doCheckin() {
+  const name = document.getElementById('ci-name').value.trim();
+  const room = document.getElementById('ci-room').value;
+  const idNum = document.getElementById('ci-id').value.trim();
+  const nat = document.getElementById('ci-nat').value.trim();
+  const adults = document.getElementById('ci-adults').value;
+  const children = document.getElementById('ci-children').value;
+  const cout = document.getElementById('ci-cout').value;
+  const rate = document.getElementById('ci-rate').value;
+
+  if (!name) return showMsg('ci-msg', 'error', 'Guest Name is required.');
+  if (!room) return showMsg('ci-msg', 'error', 'Please select a room.');
+
+  const rooms = loadRooms();
+  if (rooms[room].status !== 'vacant') return showMsg('ci-msg', 'error', 'Selected room is not vacant.');
+
+  rooms[room].status = 'occupied';
+  rooms[room].guest = name;
+  saveRooms(rooms);
+
+  const guests = loadGuests();
+  guests[room] = {
+    name, room, idNum, nat, adults, children,
+    checkout: cout, rate, checkinDate: new Date().toLocaleDateString()
+  };
+  saveGuests(guests);
+  addActivity(Check-In: ${name} → Room ${room});
+  showMsg('ci-msg', 'success', ✔ ${name} checked into Room ${room} successfully.);
+  resetCheckinForm();
+  populateCheckinRoom();
+  renderDashboard();
 }
 
-load();
-</script></body>
+function resetCheckinForm() {
+  ['ci-name','ci-id','ci-nat','ci-rate'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('ci-adults').value = 1;
+  document.getElementById('ci-children').value = 0;
+  const tomorrow = new Date(); tomorrow.setDate(tomorrow.getDate()+1);
+  document.getElementById('ci-cout').value = tomorrow.toISOString().split('T')[0];
+  document.getElementById('ci-msg').style.display = 'none';
+}
+
+// ===================== CHECK-OUT =====================
+
+function populateCheckoutRoom() {
+  const rooms = loadRooms();
+  const sel = document.getElementById('co-room');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  const occ = Object.values(rooms).filter(r => r.status === 'occupied');
+  if (occ.length === 0) {
+    sel.innerHTML = '<option value="">-- No occupied rooms --</option>';
+    document.getElementById('co-guest-info').style.display = 'none';
+    return;
+  }
+  occ.forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.num;
+    o.textContent = ${r.num} — ${r.guest || '(unknown)'};
+    sel.appendChild(o);
+  });
+  if (prev) sel.value = prev;
+  sel.onchange = updateCoGuestInfo;
+  updateCoGuestInfo();
+}
+
+function updateCoGuestInfo() {
+  const room = document.getElementById('co-room').value;
+  const guests = loadGuests();
+  const g = guests[room];
+  const infoEl = document.getElementById('co-guest-info');
+  if (g) {
+    document.getElementById('co-guest-detail').textContent = ${g.name}  |  Check-in: ${g.checkinDate}  |  Expected C/O: ${g.checkout || '—'};
+    infoEl.style.display = 'block';
+  } else {
+    infoEl.style.display = 'none';
+  }
+}
+
+function doCheckout() {
+  const room = document.getElementById('co-room').value;
+  if (!room) return showMsg('co-msg', 'error', 'Please select a room.');
+
+  const rooms = loadRooms();
+  if (rooms[room].status !== 'occupied') return showMsg('co-msg', 'error', 'Selected room is not occupied.');
+
+  const guests = loadGuests();
+  const gName = guests[room]?.name || '(unknown)';
+
+  rooms[room].status = 'dirty';
+  rooms[room].guest = null;
+  saveRooms(rooms);
+
+  delete guests[room];
+  saveGuests(guests);
+  addActivity(Check-Out: ${gName} ← Room ${room} (now Dirty));
+  showMsg('co-msg', 'success', ✔ Room ${room} checked out. Marked as dirty.);
+  resetCheckoutForm();
+  populateCheckoutRoom();
+  renderDashboard();
+}
+
+function resetCheckoutForm() {
+  document.getElementById('co-charges').value = 0;
+  document.getElementById('co-remarks').value = '';
+  document.getElementById('co-msg').style.display = 'none';
+  document.getElementById('co-guest-info').style.display = 'none';
+}
+
+// ===================== GUEST LIST =====================
+
+function renderGuestList() {
+  const guests = loadGuests();
+  const query = (document.getElementById('gl-search')?.value || '').toLowerCase();
+  const tbody = document.getElementById('guest-tbody');
+  tbody.innerHTML = '';
+  let entries = Object.values(guests);
+  if (query) entries = entries.filter(g => g.name.toLowerCase().includes(query) || g.room.includes(query));
+
+  if (entries.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="10" style="text-align:center;color:var(--text-label);padding:18px;">No guests found.</td></tr>';
+    return;
+  }
+  entries.forEach((g, i) => {
+    tbody.innerHTML += `<tr>
+      <td>${i+1}</td>
+      <td><strong style="color:var(--accent)">${g.room}</strong></td>
+      <td>${g.name}</td>
+      <td>${g.idNum || '—'}</td>
+      <td>${g.nat || '—'}</td>
+      <td>${g.adults || 1}A / ${g.children || 0}C</td>
+      <td>${g.checkinDate}</td>
+      <td>${g.checkout || '—'}</td>
+      <td>$${Number(g.rate||0).toFixed(2)}</td>
+      <td><span class="badge badge-occupied">CHECKED IN</span></td>
+    </tr>`;
+  });
+}
+
+// ===================== OCCUPANCY LIST =====================
+
+function renderOccupancy() {
+  const rooms = loadRooms();
+  const guests = loadGuests();
+  const tbody = document.getElementById('occ-tbody');
+  tbody.innerHTML = '';
+
+  Object.values(rooms).sort((a,b) => a.num.localeCompare(b.num)).forEach(room => {
+    const g = guests[room.num];
+    const statusColor = { vacant: 'var(--green)', occupied: 'var(--red)', dirty: 'var(--yellow)' }[room.status] || 'inherit';
+    tbody.innerHTML += `<tr>
+      <td><strong style="color:var(--accent)">${room.num}</strong></td>
+      <td>${room.type}</td>
+      <td>${room.floor}</td>
+      <td><span style="color:${statusColor};font-weight:700;letter-spacing:0.5px">${room.status.toUpperCase()}</span></td>
+      <td>${g ? g.name : '—'}</td>
+      <td>${g ? g.checkinDate : '—'}</td>
+      <td>${g ? g.checkout || '—' : '—'}</td>
+    </tr>`;
+  });
+}
+
+// ===================== RESERVATION =====================
+
+function populateResRoom() {
+  const rooms = loadRooms();
+  const sel = document.getElementById('res-room');
+  sel.innerHTML = '';
+  Object.values(rooms).filter(r => r.status === 'vacant').forEach(r => {
+    const o = document.createElement('option');
+    o.value = r.num;
+    o.textContent = ${r.num} — ${r.type};
+    sel.appendChild(o);
+  });
+}
+
+function saveReservation() {
+  const name = document.getElementById('res-name').value.trim();
+  const room = document.getElementById('res-room').value;
+  const arr = document.getElementById('res-arr').value;
+  const dep = document.getElementById('res-dep').value;
+  const contact = document.getElementById('res-contact').value.trim();
+  const adults = document.getElementById('res-adults').value;
+
+  if (!name || !room || !arr || !dep) return showMsg('res-msg', 'error', 'Please fill in all required fields.');
+
+  const resList = loadReservations();
+  resList.push({ name, room, arr, dep, contact, adults, id: Date.now() });
+  saveReservations(resList);
+  addActivity(Reservation: ${name} for Room ${room} (${arr} to ${dep}));
+  showMsg('res-msg', 'success', ✔ Reservation saved for ${name}.);
+  renderReservations();
+  ['res-name','res-contact'].forEach(id => document.getElementById(id).value = '');
+}
+
+function renderReservations() {
+  const resList = loadReservations();
+  const tbody = document.getElementById('res-tbody');
+  tbody.innerHTML = '';
+  if (resList.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-label);">No reservations.</td></tr>';
+    return;
+  }
+  resList.forEach(r => {
+    tbody.innerHTML += `<tr>
+      <td>${r.name}</td>
+      <td>${r.room}</td>
+      <td>${r.arr}</td>
+      <td>${r.dep}</td>
+      <td><button class="btn btn-danger" style="padding:3px 8px;font-size:10px" onclick="deleteReservation(${r.id})">✕</button></td>
+    </tr>`;
+  });
+}
+
+function deleteReservation(id) {
+  let list = loadReservations().filter(r => r.id !== id);
+  saveReservations(list);
+  renderReservations();
+}
+
+// ===================== UTILS =====================
+
+function showMsg(id, type, msg) {
+  const el = document.getElementById(id);
+  el.className = status-msg ${type};
+  el.textContent = msg;
+  el.style.display = 'block';
+  setTimeout(() => { el.style.display = 'none'; }, 4000);
+}
+
+function confirmLogout() {
+  document.getElementById('logout-modal').classList.add('open');
+}
+
+// ===================== CLOCK & STATUSBAR =====================
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toTimeString().split(' ')[0];
+  document.getElementById('sb-date').textContent = now.toDateString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===================== KEYBOARD SHORTCUTS =====================
+
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'F1') { e.preventDefault(); showSection('occupancy'); }
+  if (e.key === 'F2') { e.preventDefault(); showSection('roomcalendar'); }
+  if (e.key === 'F6') { e.preventDefault(); showSection('checkin'); }
+  if (e.key === 'F7') { e.preventDefault(); showSection('checkout'); }
+});
+
+// ===================== INIT =====================
+
+loadRooms(); // ensure initialized
+renderDashboard();
+</script>
+</body>
 </html>
