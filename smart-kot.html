@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanskar Grand - Room Service KOT</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f2f2f2;
+    color: #1a1a1a;
+  }
+
+  /* ============ CONTROLS (screen only) ============ */
+  .app {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .brand {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .brand .name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #1d6f66;
+  }
+  .brand .sub {
+    font-size: 12px;
+    color: #555;
+  }
+
+  .panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .top-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .field input, .field select {
+    width: 100%;
+    padding: 9px 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+  }
+  .field.wide { grid-column: 1 / -1; }
+
+  .search-box {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .category {
+    margin-bottom: 6px;
+  }
+  .category-title {
+    background: #1d6f66;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin: 10px 0 6px 0;
+  }
+
+  .item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 4px;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
+  }
+  .item-row:last-child { border-bottom: none; }
+  .item-row.hidden { display: none; }
+
+  .item-name {
+    font-size: 14px;
+    flex: 1;
+  }
+
+  .qty-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .qty-control button {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    color: #1d6f66;
+  }
+  .qty-control button:active { background: #e0e0e0; }
+  .qty-control input {
+    width: 40px;
+    text-align: center;
+    font-size: 15px;
+    padding: 5px 2px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  .item-row.active {
+    background: #eaf6f4;
+    border-radius: 6px;
+  }
+
+  .action-bar {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    padding: 10px 16px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+    display: flex;
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .action-bar .count {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #555;
+  }
+  .btn {
+    padding: 12px 18px;
+    font-size: 15px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn-primary { background: #1d6f66; color: #fff; }
+  .btn-secondary { background: #eee; color: #333; }
+
+  /* ============ TICKET (printable) ============ */
+  #ticketOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 100;
+    overflow-y: auto;
+    padding: 20px 0;
+  }
+  #ticketOverlay.show { display: block; }
+
+  .ticket-wrap {
+    background: #fff;
+    max-width: 340px;
+    margin: 0 auto;
+  }
+
+  .kot {
+    width: 100%;
+    padding: 4mm 8mm;
+    color: #000;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 13px;
+  }
+  .center { text-align: center; }
+  .shop-name { font-size: 17px; font-weight: bold; letter-spacing: 1px; }
+  .shop-sub { font-size: 11px; margin-bottom: 6px; }
+  .section-title { font-size: 15px; font-weight: bold; margin-top: 4px; }
+  .section-sub { font-size: 13px; margin-bottom: 6px; }
+
+  .field-row { display: flex; font-size: 13px; margin: 2px 0; }
+  .field-label { width: 70px; flex-shrink: 0; }
+  .field-colon { width: 10px; flex-shrink: 0; }
+  .field-fill { flex-grow: 1; }
+
+  .new-order { text-align: center; font-weight: bold; text-decoration: underline; margin-top: 10px; font-size: 14px; }
+  .orig-copy { text-align: center; font-weight: bold; text-decoration: underline; margin-top: 2px; font-size: 15px; }
+
+  .divider { border: none; border-top: 1px dashed #000; margin: 8px 0 4px 0; }
+
+  table.items { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 13px; }
+  table.items th { border-bottom: 1px dashed #000; padding: 3px 2px; text-align: left; }
+  table.items th.qty { text-align: right; width: 20%; }
+  table.items td { padding: 5px 2px; vertical-align: top; }
+  table.items td.qty-cell { text-align: right; border-left: 1px dashed #000; width: 20%; padding-left: 6px; }
+
+  .end-row { text-align: center; margin-top: 6px; font-size: 13px; }
+  .footer-row { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; }
+
+  .ticket-actions {
+    text-align: center;
+    padding: 14px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  /* ============ HISTORY ============ */
+  .history-link {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .history-link button {
+    background: none;
+    border: none;
+    color: #1d6f66;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  #historyOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    overflow-y: auto;
+    padding: 20px 12px;
+  }
+  #historyOverlay.show { display: block; }
+
+  .history-panel {
+    background: #fff;
+    max-width: 600px;
+    margin: 0 auto;
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .history-header h2 {
+    font-size: 17px;
+    margin: 0;
+    color: #1d6f66;
+  }
+  .history-summary {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+  }
+  .history-entry {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .history-entry .h-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 4px;
+  }
+  .history-entry .h-meta {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+  }
+  .history-entry .h-items {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+  }
+  .history-entry .h-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .h-actions button {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+  .h-actions button.danger { color: #b23b3b; border-color: #e3b6b6; }
+  .h-actions button.edit { color: #1d6f66; border-color: #a9d3ce; }
+  .history-empty {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    padding: 30px 0;
+  }
+  .history-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+  }
+
+  /* ============ PASSWORD / EDIT MODALS ============ */
+  #passwordOverlay, #editOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #passwordOverlay.show, #editOverlay.show { display: flex; }
+
+  .small-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    max-width: 340px;
+    width: 100%;
+  }
+  .small-panel h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #1d6f66;
+  }
+  .small-panel input[type="password"], .small-panel input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .small-panel .err {
+    color: #b23b3b;
+    font-size: 12px;
+    margin: -4px 0 10px 0;
+    display: none;
+  }
+  .small-panel .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .edit-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .edit-panel h3 { margin: 0 0 12px 0; font-size: 16px; color: #1d6f66; }
+  .edit-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
+  }
+  .edit-item-row .item-name { font-size: 13px; flex: 1; }
+
+  @media print {
+    body * { visibility: hidden; }
+    #ticketOverlay, #ticketOverlay * { visibility: visible; }
+    #ticketOverlay {
+      display: block;
+      position: absolute;
+      inset: 0;
+      background: #fff;
+      padding: 0;
+    }
+    .ticket-wrap { max-width: none; }
+    .ticket-actions { display: none; }
+    #historyOverlay { display: none !important; }
+    #passwordOverlay, #editOverlay { display: none !important; }
+    @page { size: 80mm auto; margin: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="brand">
+    <div class="name">SANSKAR GRAND</div>
+    <div class="sub">by Maan — Room Service KOT</div>
+  </div>
+
+  <div class="history-link">
+    <button onclick="openHistory()">📋 View Today's KOT Log</button>
+    <div id="syncStatus" style="font-size:11px;color:#999;margin-top:2px;">Connecting…</div>
+  </div>
+
+  <div class="panel">
+    <div class="top-fields">
+      <div class="field">
+        <label>Room No.</label>
+        <input type="text" id="roomNo" placeholder="e.g. 206" inputmode="numeric">
+      </div>
+      <div class="field">
+        <label>Steward</label>
+        <select id="steward">
+          <option value="">Select...</option>
+          <option>Tulasha</option>
+          <option>Arpit</option>
+          <option>Sohan</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <input type="text" class="search-box" id="searchBox" placeholder="Search item...">
+    <div id="menuList"></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <div class="count" id="itemCount">0 items selected</div>
+  <button class="btn btn-secondary" onclick="clearAll()">Clear</button>
+  <button class="btn btn-primary" onclick="openTicket()">Generate KOT</button>
+</div>
+
+<div id="ticketOverlay">
+  <div class="ticket-wrap">
+    <div class="kot">
+      <div class="center shop-name">SANSKAR GRAND</div>
+      <div class="center shop-sub">by Maan</div>
+
+      <div class="center section-title">ROOM SERVICE</div>
+      <div class="center section-sub">Room Service KOT</div>
+
+      <div class="field-row">
+        <span class="field-label">Room No.</span><span class="field-colon">:</span>
+        <span class="field-fill" id="tRoom"></span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Date</span><span class="field-colon">:</span>
+        <span class="field-fill" id="tDate"></span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Time</span><span class="field-colon">:</span>
+        <span class="field-fill" id="tTime"></span>
+      </div>
+      <div class="field-row">
+        <span class="field-label">Steward</span><span class="field-colon">:</span>
+        <span class="field-fill" id="tSteward"></span>
+      </div>
+
+      <div class="new-order">NEW ORDER</div>
+      <div class="orig-copy">Original Copy</div>
+
+      <hr class="divider">
+
+      <table class="items">
+        <thead>
+          <tr><th>Item Name</th><th class="qty">Qty</th></tr>
+        </thead>
+        <tbody id="tRows"></tbody>
+      </table>
+
+      <hr class="divider">
+      <div class="end-row">---- END ----</div>
+      <div class="footer-row">
+        <span id="tPrintTime"></span>
+        <span>FNB</span>
+      </div>
+    </div>
+  </div>
+  <div class="ticket-actions">
+    <button class="btn btn-primary" onclick="saveToHistory(); window.print()">🖨️ Print</button>
+    <button class="btn btn-secondary" onclick="closeTicket()">Back / Edit</button>
+  </div>
+</div>
+
+<div id="historyOverlay">
+  <div class="history-panel">
+    <div class="history-header">
+      <h2>KOT Log</h2>
+      <button class="btn btn-secondary" onclick="closeHistory()" style="padding:6px 12px;">Close</button>
+    </div>
+    <div class="history-summary" id="historySummary"></div>
+    <div id="historyList"></div>
+    <div class="history-footer">
+      <button class="btn btn-secondary" onclick="requestUnlock('clearAll', null)">Clear All Log</button>
+    </div>
+  </div>
+</div>
+
+<div id="passwordOverlay">
+  <div class="small-panel">
+    <h3>Enter Password to Continue</h3>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <div class="err" id="pwError">Incorrect password. Try again.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="checkPassword()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="editOverlay">
+  <div class="edit-panel">
+    <h3>Edit KOT — Room <span id="editRoomLabel"></span></h3>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Room No.</label>
+      <input type="text" id="editRoomNo">
+    </div>
+    <div class="field" style="margin-bottom:10px;">
+      <label>Steward</label>
+      <select id="editSteward">
+        <option>Tulasha</option>
+        <option>Arpit</option>
+        <option>Sohan</option>
+      </select>
+    </div>
+    <div id="editItemsList"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase (compat SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+const MENU = [
+  { category: "Starters", items: [
+    "Veg Sandwich","Veg Grilled Sandwich","Veg Mix Pakora (12pcs)","Paneer Pakoda (10pcs)",
+    "Honey Chilly Potato","Chilly Paneer","Chilly Mushroom","Veg Manchurian (Dry/Gravy)",
+    "Crispy Corn","French Fry","Papad Roasted / Fried (2pcs)","Peanut Masala",
+    "Masala Papad (2pcs)","Paneer Tikka","Hara Bhara Kabab","Roasted Peanut"
+  ]},
+  { category: "Raitas & Salads", items: [
+    "Green Salad","Onion Salad","Kachumbar Salad","Aloo Chana Chat",
+    "Plain Raita","Boondi / Mix Veg Raita","Pineapple Raita","Dahi Papdi Chat"
+  ]},
+  { category: "Breakfast", items: [
+    "Indian Breakfast","Bread Butter Toast / Jam","Choice of Parantha (Aloo/Gobhi/Paneer/Onion/Mix)",
+    "Idli Sambhar with Coconut Chutney (4pcs)","Poori Bhaji (6pcs)","Poha","Upma",
+    "Vermicelli Chilly","Chole Bhature","Seasonal Fruit Platter"
+  ]},
+  { category: "Soups", items: [
+    "Tomato Soup","Veg Clear Soup","Dhaniya Tomato Shorba",
+    "Veg Manchow Soup","Veg Hot 'N' Sour Soup","Lemon Coriander Soup"
+  ]},
+  { category: "Indian Main Course", items: [
+    "Dal Fry","Dal Tadka","Dal Makhani","Rajma","Chana Masala","Malai Kofta","Veg Kofta",
+    "Dum Aloo","Jeera Aloo","Aloo Gobhi Masala","Kadai Paneer","Butter Paneer Masala",
+    "Paneer Lababdar","Palak Paneer","Handi Paneer","Matar Paneer","Paneer Do Pyaza",
+    "Paneer Bhurji","Paneer Angara","Papad Ki Sabji","Corn Capsicum Masala","Mix Veg",
+    "Veg Jalfrezi","Mutter Mushroom","Kadai Pakora","Gujarati Kadai","Sev Tamatar","Bhindi / Gobhi"
+  ]},
+  { category: "Chinese", items: [
+    "Chilly Garlic Noodle","Hakka Noodle","Fried Rice","Pasta (Red/White Sauce)"
+  ]},
+  { category: "Rice & Noodles", items: [
+    "Plain Rice","Jeera Rice","Veg Biryani (with raita & chutney)","Veg Pulao","Dal Khichdi"
+  ]},
+  { category: "Indian Breads", items: [
+    "Tawa Roti Plain","Tawa Roti Butter","Tandoori Roti","Tandoori Roti Butter",
+    "Plain Naan","Butter Naan","Plain Paratha","Laccha Paratha","Garlic Naan","Missi Roti"
+  ]},
+  { category: "Beverages", items: [
+    "Tea (Milk/Black/Lemon/Ginger)","Coffee (Milk/Black)","Bournvita",
+    "Fresh Lime Soda (Sweet/Salted)","Fresh Lime in Pkg. Water (Sweet/Salted)",
+    "Moktail / Mojito / Blu Lagoon","Cold Coffee","Cold Coffee with Ice Cream",
+    "Lassi (Sweet/Salted)","Soda","Package Drinking Water","Butter Milk","Choice of Milk"
+  ]},
+  { category: "Desserts", items: [
+    "Rice Kheer","Sewaiyan Kheer","Fruit Custard","Ice Bucket",
+    "Halwa (Moong Dal / Gajar)","Hot Gulab Jamun (2pcs)","Ice Cream (Butterscotch/Vanilla/Chocolate)"
+  ]}
+];
+
+const qtyState = {};
+let lastTicket = null;
+let ticketSaved = false;
+let historyCache = [];
+const KOT_COLLECTION = 'kotHistory';
+
+/* ===== Firebase init (uses auth/db from firebase-config.js) ===== */
+firebase.auth().signInAnonymously().catch(err => {
+  console.error('Anonymous sign-in failed:', err);
+  document.getElementById('syncStatus').textContent = 'Sync error — check Firebase setup';
+});
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('syncStatus').textContent = 'Synced';
+    db.collection(KOT_COLLECTION).orderBy('createdAt', 'desc')
+      .onSnapshot(snapshot => {
+        historyCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        if (document.getElementById('historyOverlay').classList.contains('show')) {
+          renderHistory();
+        }
+      }, err => {
+        console.error('History sync error:', err);
+        document.getElementById('syncStatus').textContent = 'Sync error — check Firestore rules';
+      });
+  }
+});
+
+function buildMenu() {
+  const container = document.getElementById('menuList');
+  container.innerHTML = '';
+  MENU.forEach(group => {
+    const catDiv = document.createElement('div');
+    catDiv.className = 'category';
+    catDiv.innerHTML = `<div class="category-title">${group.category}</div>`;
+    group.items.forEach(name => {
+      const id = slug(name);
+      qtyState[id] = qtyState[id] || 0;
+      const row = document.createElement('div');
+      row.className = 'item-row';
+      row.dataset.name = name.toLowerCase();
+      row.id = 'row-' + id;
+      row.innerHTML = `
+        <span class="item-name">${name}</span>
+        <div class="qty-control">
+          <button onclick="changeQty('${id}', -1)">−</button>
+          <input type="number" min="0" value="${qtyState[id]}" id="qty-${id}"
+                 onchange="setQty('${id}', this.value)">
+          <button onclick="changeQty('${id}', 1)">+</button>
+        </div>`;
+      catDiv.appendChild(row);
+    });
+    container.appendChild(catDiv);
+  });
+}
+
+function slug(str) {
+  return str.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+function changeQty(id, delta) {
+  qtyState[id] = Math.max(0, (qtyState[id] || 0) + delta);
+  document.getElementById('qty-' + id).value = qtyState[id];
+  refreshRowState(id);
+  updateCount();
+}
+
+function setQty(id, val) {
+  let v = parseInt(val, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  qtyState[id] = v;
+  document.getElementById('qty-' + id).value = v;
+  refreshRowState(id);
+  updateCount();
+}
+
+function refreshRowState(id) {
+  const row = document.getElementById('row-' + id);
+  if (qtyState[id] > 0) row.classList.add('active');
+  else row.classList.remove('active');
+}
+
+function updateCount() {
+  const total = Object.values(qtyState).filter(v => v > 0).length;
+  document.getElementById('itemCount').textContent = total + ' item' + (total === 1 ? '' : 's') + ' selected';
+}
+
+function clearAll() {
+  Object.keys(qtyState).forEach(id => {
+    qtyState[id] = 0;
+    const input = document.getElementById('qty-' + id);
+    if (input) input.value = 0;
+    refreshRowState(id);
+  });
+  updateCount();
+}
+
+document.getElementById('searchBox').addEventListener('input', function() {
+  const term = this.value.toLowerCase().trim();
+  document.querySelectorAll('.item-row').forEach(row => {
+    row.classList.toggle('hidden', term && !row.dataset.name.includes(term));
+  });
+  document.querySelectorAll('.category').forEach(cat => {
+    const visible = cat.querySelectorAll('.item-row:not(.hidden)').length;
+    cat.style.display = visible === 0 ? 'none' : '';
+  });
+});
+
+function openTicket() {
+  const selected = [];
+  MENU.forEach(group => {
+    group.items.forEach(name => {
+      const id = slug(name);
+      if (qtyState[id] > 0) selected.push([name, qtyState[id]]);
+    });
+  });
+
+  if (selected.length === 0) {
+    alert('Select at least one item before generating the KOT.');
+    return;
+  }
+
+  const room = document.getElementById('roomNo').value.trim();
+  const steward = document.getElementById('steward').value;
+  if (!room) { alert('Please enter Room No.'); return; }
+  if (!steward) { alert('Please select Steward.'); return; }
+
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+  const printTimeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  document.getElementById('tRoom').textContent = room;
+  document.getElementById('tDate').textContent = dateStr;
+  document.getElementById('tTime').textContent = timeStr;
+  document.getElementById('tSteward').textContent = steward;
+  document.getElementById('tPrintTime').textContent = printTimeStr;
+
+  const tbody = document.getElementById('tRows');
+  tbody.innerHTML = '';
+  selected.forEach(([name, qty]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${name}</td><td class="qty-cell">${qty.toFixed(2)}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  lastTicket = {
+    room, steward,
+    dateStr, timeStr,
+    items: selected.map(([name, qty]) => ({ name, qty }))
+  };
+  ticketSaved = false;
+
+  document.getElementById('ticketOverlay').classList.add('show');
+}
+
+function closeTicket() {
+  document.getElementById('ticketOverlay').classList.remove('show');
+}
+
+function saveToHistory() {
+  if (!lastTicket || ticketSaved) return;
+  ticketSaved = true;
+  db.collection(KOT_COLLECTION).add({
+    room: lastTicket.room,
+    steward: lastTicket.steward,
+    date: lastTicket.dateStr,
+    time: lastTicket.timeStr,
+    items: lastTicket.items,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(err => {
+    console.error('Save failed:', err);
+    ticketSaved = false;
+    alert('Could not save this KOT to the log (still printed). Check your internet connection.');
+  });
+}
+
+function openHistory() {
+  renderHistory();
+  document.getElementById('historyOverlay').classList.add('show');
+}
+
+function renderHistory() {
+  const history = historyCache;
+  const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const todays = history.filter(h => h.date === todayStr);
+
+  document.getElementById('historySummary').textContent =
+    todays.length + ' KOT' + (todays.length === 1 ? '' : 's') + ' printed today (' + todayStr + ') · ' +
+    history.length + ' total in log';
+
+  const listEl = document.getElementById('historyList');
+  listEl.innerHTML = '';
+
+  if (history.length === 0) {
+    listEl.innerHTML = '<div class="history-empty">No KOTs printed yet.</div>';
+  } else {
+    history.forEach(entry => {
+      const itemsText = entry.items.map(i => `${i.name} × ${i.qty}`).join(', ');
+      const div = document.createElement('div');
+      div.className = 'history-entry';
+      div.innerHTML = `
+        <div class="h-top"><span>Room ${entry.room}</span><span>${entry.date} · ${entry.time}</span></div>
+        <div class="h-meta">Steward: ${entry.steward}</div>
+        <div class="h-items">${itemsText}</div>
+        <div class="h-actions">
+          <button class="edit" onclick="requestUnlock('edit', '${entry.id}')">✏️ Edit</button>
+          <button class="danger" onclick="requestUnlock('delete', '${entry.id}')">🗑️ Delete</button>
+        </div>`;
+      listEl.appendChild(div);
+    });
+  }
+}
+
+function closeHistory() {
+  document.getElementById('historyOverlay').classList.remove('show');
+}
+
+function performClearAll() {
+  if (!confirm('Clear the entire KOT log? This cannot be undone.')) return;
+  const batchDeletes = historyCache.map(entry => db.collection(KOT_COLLECTION).doc(entry.id).delete());
+  Promise.all(batchDeletes).catch(err => {
+    console.error('Clear all failed:', err);
+    alert('Some entries could not be deleted. Check your internet connection and try again.');
+  });
+}
+
+/* ===== Password-gated edit / delete ===== */
+const EDIT_PASSWORD = 'Sanskar@5656';
+let pendingAction = null; // { type: 'edit' | 'delete', savedAt }
+
+function requestUnlock(type, savedAt) {
+  pendingAction = { type, savedAt };
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').style.display = 'none';
+  document.getElementById('passwordOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('pwInput').focus(), 50);
+}
+
+function closePasswordModal() {
+  pendingAction = null;
+  document.getElementById('passwordOverlay').classList.remove('show');
+}
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val !== EDIT_PASSWORD) {
+    document.getElementById('pwError').style.display = 'block';
+    return;
+  }
+  document.getElementById('passwordOverlay').classList.remove('show');
+  if (!pendingAction) return;
+
+  if (pendingAction.type === 'delete') {
+    performDelete(pendingAction.savedAt);
+  } else if (pendingAction.type === 'edit') {
+    openEditModal(pendingAction.savedAt);
+  } else if (pendingAction.type === 'clearAll') {
+    performClearAll();
+  }
+  pendingAction = null;
+}
+
+document.getElementById('pwInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPassword();
+});
+
+function performDelete(id) {
+  db.collection(KOT_COLLECTION).doc(id).delete().catch(err => {
+    console.error('Delete failed:', err);
+    alert('Could not delete this entry. Check your internet connection.');
+  });
+}
+
+let editingId = null;
+
+function openEditModal(id) {
+  const entry = historyCache.find(h => h.id === id);
+  if (!entry) return;
+  editingId = id;
+
+  document.getElementById('editRoomLabel').textContent = entry.room;
+  document.getElementById('editRoomNo').value = entry.room;
+  document.getElementById('editSteward').value = entry.steward;
+
+  const listEl = document.getElementById('editItemsList');
+  listEl.innerHTML = '';
+  entry.items.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'edit-item-row';
+    row.innerHTML = `
+      <span class="item-name">${item.name}</span>
+      <div class="qty-control">
+        <button onclick="editQtyChange(${i}, -1)">−</button>
+        <input type="number" min="0" value="${item.qty}" id="edit-qty-${i}"
+               onchange="editQtySet(${i}, this.value)">
+        <button onclick="editQtyChange(${i}, 1)">+</button>
+      </div>`;
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('editOverlay').classList.add('show');
+}
+
+function editQtyChange(i, delta) {
+  const input = document.getElementById('edit-qty-' + i);
+  let v = Math.max(0, parseInt(input.value || '0', 10) + delta);
+  input.value = v;
+}
+
+function editQtySet(i, val) {
+  let v = parseInt(val, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  document.getElementById('edit-qty-' + i).value = v;
+}
+
+function closeEditModal() {
+  document.getElementById('editOverlay').classList.remove('show');
+  editingId = null;
+}
+
+function saveEdit() {
+  if (!editingId) return;
+  const entry = historyCache.find(h => h.id === editingId);
+  if (!entry) return;
+
+  const newRoom = document.getElementById('editRoomNo').value.trim();
+  const newSteward = document.getElementById('editSteward').value;
+  if (!newRoom) { alert('Room No. cannot be empty.'); return; }
+
+  const newItems = entry.items.map((item, i) => {
+    const val = parseInt(document.getElementById('edit-qty-' + i).value, 10) || 0;
+    return { name: item.name, qty: val };
+  }).filter(item => item.qty > 0);
+
+  if (newItems.length === 0) {
+    if (!confirm('All items set to 0 — this will delete the KOT entry. Continue?')) return;
+    performDelete(editingId);
+    closeEditModal();
+    return;
+  }
+
+  db.collection(KOT_COLLECTION).doc(editingId).update({
+    room: newRoom,
+    steward: newSteward,
+    items: newItems
+  }).catch(err => {
+    console.error('Update failed:', err);
+    alert('Could not save changes. Check your internet connection.');
+  });
+
+  closeEditModal();
+}
+
+buildMenu();
+updateCount();
+</script>
+
+</body>
+</html>
