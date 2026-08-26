@@ -442,6 +442,23 @@
   </div>
 
   <div class="panel">
+    <div class="top-fields" style="grid-template-columns: 2fr 1fr auto;">
+      <div class="field">
+        <label>Add Custom Item</label>
+        <input type="text" id="customItemName" placeholder="Type item name..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomItem();}">
+      </div>
+      <div class="field">
+        <label>Qty</label>
+        <input type="number" id="customItemQty" min="1" value="1">
+      </div>
+      <div class="field" style="display:flex; align-items:flex-end;">
+        <button class="btn btn-primary" style="width:100%;" onclick="addCustomItem()">+ Add</button>
+      </div>
+    </div>
+    <div id="customItemsList" style="margin-top:6px;"></div>
+  </div>
+
+  <div class="panel">
     <input type="text" class="search-box" id="searchBox" placeholder="Search item...">
     <div id="menuList"></div>
   </div>
@@ -611,6 +628,7 @@ const MENU = [
 ];
 
 const qtyState = {};
+let customItems = []; // { id, name, qty }
 let lastTicket = null;
 let ticketSaved = false;
 let historyCache = [];
@@ -693,7 +711,9 @@ function refreshRowState(id) {
 }
 
 function updateCount() {
-  const total = Object.values(qtyState).filter(v => v > 0).length;
+  const menuCount = Object.values(qtyState).filter(v => v > 0).length;
+  const customCount = customItems.filter(c => c.qty > 0).length;
+  const total = menuCount + customCount;
   document.getElementById('itemCount').textContent = total + ' item' + (total === 1 ? '' : 's') + ' selected';
 }
 
@@ -704,7 +724,70 @@ function clearAll() {
     if (input) input.value = 0;
     refreshRowState(id);
   });
+  customItems = [];
+  renderCustomItems();
   updateCount();
+}
+
+/* ===== Custom (ad-hoc) items ===== */
+function addCustomItem() {
+  const nameInput = document.getElementById('customItemName');
+  const qtyInput = document.getElementById('customItemQty');
+  const name = nameInput.value.trim();
+  let qty = parseInt(qtyInput.value, 10);
+  if (!name) { alert('Type an item name first.'); return; }
+  if (isNaN(qty) || qty < 1) qty = 1;
+
+  customItems.push({ id: 'custom-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6), name, qty });
+  renderCustomItems();
+  updateCount();
+
+  nameInput.value = '';
+  qtyInput.value = 1;
+  nameInput.focus();
+}
+
+function changeCustomQty(id, delta) {
+  const item = customItems.find(c => c.id === id);
+  if (!item) return;
+  item.qty = Math.max(1, item.qty + delta);
+  renderCustomItems();
+  updateCount();
+}
+
+function setCustomQty(id, val) {
+  const item = customItems.find(c => c.id === id);
+  if (!item) return;
+  let v = parseInt(val, 10);
+  if (isNaN(v) || v < 1) v = 1;
+  item.qty = v;
+  renderCustomItems();
+  updateCount();
+}
+
+function removeCustomItem(id) {
+  customItems = customItems.filter(c => c.id !== id);
+  renderCustomItems();
+  updateCount();
+}
+
+function renderCustomItems() {
+  const container = document.getElementById('customItemsList');
+  container.innerHTML = '';
+  customItems.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'item-row active';
+    row.innerHTML = `
+      <span class="item-name">${item.name}</span>
+      <div class="qty-control">
+        <button onclick="changeCustomQty('${item.id}', -1)">−</button>
+        <input type="number" min="1" value="${item.qty}"
+               onchange="setCustomQty('${item.id}', this.value)">
+        <button onclick="changeCustomQty('${item.id}', 1)">+</button>
+        <button onclick="removeCustomItem('${item.id}')" style="color:#b23b3b;border-color:#e3b6b6;">✕</button>
+      </div>`;
+    container.appendChild(row);
+  });
 }
 
 document.getElementById('searchBox').addEventListener('input', function() {
@@ -725,6 +808,9 @@ function openTicket() {
       const id = slug(name);
       if (qtyState[id] > 0) selected.push([name, qtyState[id]]);
     });
+  });
+  customItems.forEach(item => {
+    if (item.qty > 0) selected.push([item.name, item.qty]);
   });
 
   if (selected.length === 0) {
