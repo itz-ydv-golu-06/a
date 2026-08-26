@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sanskar Grand - KOT Log</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f2f2f2;
+    color: #1a1a1a;
+  }
+
+  .app {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 16px;
+  }
+
+  .brand {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .brand .name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #1d6f66;
+  }
+  .brand .sub {
+    font-size: 12px;
+    color: #555;
+  }
+  #syncStatus {
+    text-align: center;
+    font-size: 11px;
+    color: #999;
+    margin-bottom: 14px;
+  }
+
+  .panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+
+  .toolbar {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .toolbar input[type="text"] {
+    flex: 1;
+    min-width: 160px;
+    padding: 9px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+  .toolbar select {
+    padding: 9px 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+  }
+
+  .summary {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 12px;
+  }
+
+  .btn {
+    padding: 10px 16px;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .btn-primary { background: #1d6f66; color: #fff; }
+  .btn-secondary { background: #eee; color: #333; }
+
+  .entry {
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .entry .e-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .entry .e-meta {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 6px;
+  }
+  .entry .e-items {
+    font-size: 13px;
+    color: #333;
+    line-height: 1.5;
+  }
+  .entry .e-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .e-actions button {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    cursor: pointer;
+  }
+  .e-actions button.danger { color: #b23b3b; border-color: #e3b6b6; }
+  .e-actions button.edit { color: #1d6f66; border-color: #a9d3ce; }
+
+  .empty {
+    text-align: center;
+    color: #888;
+    font-size: 14px;
+    padding: 30px 0;
+  }
+
+  .footer-actions {
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  /* ===== Modals ===== */
+  #passwordOverlay, #editOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.55);
+    z-index: 300;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  #passwordOverlay.show, #editOverlay.show { display: flex; }
+
+  .small-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    max-width: 340px;
+    width: 100%;
+  }
+  .small-panel h3 { margin: 0 0 10px 0; font-size: 16px; color: #1d6f66; }
+  .small-panel input[type="password"], .small-panel input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .small-panel .err {
+    color: #b23b3b;
+    font-size: 12px;
+    margin: -4px 0 10px 0;
+    display: none;
+  }
+  .small-panel .modal-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .edit-panel {
+    background: #fff;
+    border-radius: 10px;
+    padding: 18px;
+    max-width: 420px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  .edit-panel h3 { margin: 0 0 12px 0; font-size: 16px; color: #1d6f66; }
+  .edit-panel label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #555;
+    margin-bottom: 4px;
+  }
+  .edit-panel input[type="text"], .edit-panel select {
+    width: 100%;
+    padding: 9px 10px;
+    font-size: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 10px;
+  }
+  .edit-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 1px solid #eee;
+    gap: 8px;
+  }
+  .edit-item-row .item-name { font-size: 13px; flex: 1; }
+  .qty-control { display: flex; align-items: center; gap: 6px; }
+  .qty-control button {
+    width: 30px; height: 30px; border-radius: 6px; border: 1px solid #ccc;
+    background: #f5f5f5; font-size: 16px; font-weight: 700; cursor: pointer; color: #1d6f66;
+  }
+  .qty-control input {
+    width: 40px; text-align: center; font-size: 15px; padding: 5px 2px;
+    border: 1px solid #ccc; border-radius: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="brand">
+    <div class="name">SANSKAR GRAND</div>
+    <div class="sub">by Maan — KOT Log</div>
+  </div>
+  <div id="syncStatus">Connecting…</div>
+
+  <div class="panel">
+    <div class="toolbar">
+      <input type="text" id="searchBox" placeholder="Search room, steward, or item...">
+      <select id="dateFilter">
+        <option value="">All dates</option>
+        <option value="today">Today only</option>
+      </select>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div id="list"></div>
+    <div class="footer-actions">
+      <button class="btn btn-secondary" onclick="requestUnlock('clearAll', null)">Clear All Log</button>
+    </div>
+  </div>
+</div>
+
+<div id="passwordOverlay">
+  <div class="small-panel">
+    <h3>Enter Password to Continue</h3>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <div class="err" id="pwError">Incorrect password. Try again.</div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="checkPassword()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<div id="editOverlay">
+  <div class="edit-panel">
+    <h3>Edit KOT — Room <span id="editRoomLabel"></span></h3>
+    <label>Room No.</label>
+    <input type="text" id="editRoomNo">
+    <label>Steward</label>
+    <select id="editSteward">
+      <option>Tulasha</option>
+      <option>Arpit</option>
+      <option>Sohan</option>
+    </select>
+    <div id="editItemsList"></div>
+    <div class="modal-actions" style="margin-top:14px;">
+      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase (compat SDK) -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+
+<script>
+const KOT_COLLECTION = 'kotHistory';
+const EDIT_PASSWORD = 'Sanskar@5656';
+let historyCache = [];
+let pendingAction = null;
+let editingId = null;
+
+firebase.auth().signInAnonymously().catch(err => {
+  console.error('Anonymous sign-in failed:', err);
+  document.getElementById('syncStatus').textContent = 'Sync error — check Firebase setup';
+});
+
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    document.getElementById('syncStatus').textContent = 'Synced';
+    db.collection(KOT_COLLECTION).orderBy('createdAt', 'desc')
+      .onSnapshot(snapshot => {
+        historyCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, err => {
+        console.error('History sync error:', err);
+        document.getElementById('syncStatus').textContent = 'Sync error — check Firestore rules';
+      });
+  }
+});
+
+function render() {
+  const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  const term = document.getElementById('searchBox').value.toLowerCase().trim();
+  const dateFilter = document.getElementById('dateFilter').value;
+
+  let filtered = historyCache;
+  if (dateFilter === 'today') filtered = filtered.filter(h => h.date === todayStr);
+  if (term) {
+    filtered = filtered.filter(h =>
+      h.room.toLowerCase().includes(term) ||
+      h.steward.toLowerCase().includes(term) ||
+      h.items.some(i => i.name.toLowerCase().includes(term))
+    );
+  }
+
+  const todaysCount = historyCache.filter(h => h.date === todayStr).length;
+  document.getElementById('summary').textContent =
+    todaysCount + ' KOT' + (todaysCount === 1 ? '' : 's') + ' today (' + todayStr + ') · ' +
+    historyCache.length + ' total · showing ' + filtered.length;
+
+  const listEl = document.getElementById('list');
+  listEl.innerHTML = '';
+
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<div class="empty">No KOTs found.</div>';
+    return;
+  }
+
+  filtered.forEach(entry => {
+    const itemsText = entry.items.map(i => `${i.name} × ${i.qty}`).join(', ');
+    const div = document.createElement('div');
+    div.className = 'entry';
+    div.innerHTML = `
+      <div class="e-top"><span>Room ${entry.room}</span><span>${entry.date} · ${entry.time}</span></div>
+      <div class="e-meta">Steward: ${entry.steward}</div>
+      <div class="e-items">${itemsText}</div>
+      <div class="e-actions">
+        <button class="edit" onclick="requestUnlock('edit', '${entry.id}')">✏️ Edit</button>
+        <button class="danger" onclick="requestUnlock('delete', '${entry.id}')">🗑️ Delete</button>
+      </div>`;
+    listEl.appendChild(div);
+  });
+}
+
+document.getElementById('searchBox').addEventListener('input', render);
+document.getElementById('dateFilter').addEventListener('change', render);
+
+/* ===== Password gate ===== */
+function requestUnlock(type, id) {
+  pendingAction = { type, id };
+  document.getElementById('pwInput').value = '';
+  document.getElementById('pwError').style.display = 'none';
+  document.getElementById('passwordOverlay').classList.add('show');
+  setTimeout(() => document.getElementById('pwInput').focus(), 50);
+}
+
+function closePasswordModal() {
+  pendingAction = null;
+  document.getElementById('passwordOverlay').classList.remove('show');
+}
+
+function checkPassword() {
+  const val = document.getElementById('pwInput').value;
+  if (val !== EDIT_PASSWORD) {
+    document.getElementById('pwError').style.display = 'block';
+    return;
+  }
+  document.getElementById('passwordOverlay').classList.remove('show');
+  if (!pendingAction) return;
+
+  if (pendingAction.type === 'delete') performDelete(pendingAction.id);
+  else if (pendingAction.type === 'edit') openEditModal(pendingAction.id);
+  else if (pendingAction.type === 'clearAll') performClearAll();
+
+  pendingAction = null;
+}
+
+document.getElementById('pwInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') checkPassword();
+});
+
+function performDelete(id) {
+  db.collection(KOT_COLLECTION).doc(id).delete().catch(err => {
+    console.error('Delete failed:', err);
+    alert('Could not delete this entry. Check your internet connection.');
+  });
+}
+
+function performClearAll() {
+  if (!confirm('Clear the entire KOT log? This cannot be undone.')) return;
+  Promise.all(historyCache.map(entry => db.collection(KOT_COLLECTION).doc(entry.id).delete()))
+    .catch(err => {
+      console.error('Clear all failed:', err);
+      alert('Some entries could not be deleted. Check your internet connection and try again.');
+    });
+}
+
+/* ===== Edit ===== */
+function openEditModal(id) {
+  const entry = historyCache.find(h => h.id === id);
+  if (!entry) return;
+  editingId = id;
+
+  document.getElementById('editRoomLabel').textContent = entry.room;
+  document.getElementById('editRoomNo').value = entry.room;
+  document.getElementById('editSteward').value = entry.steward;
+
+  const listEl = document.getElementById('editItemsList');
+  listEl.innerHTML = '';
+  entry.items.forEach((item, i) => {
+    const row = document.createElement('div');
+    row.className = 'edit-item-row';
+    row.innerHTML = `
+      <span class="item-name">${item.name}</span>
+      <div class="qty-control">
+        <button onclick="editQtyChange(${i}, -1)">−</button>
+        <input type="number" min="0" value="${item.qty}" id="edit-qty-${i}"
+               onchange="editQtySet(${i}, this.value)">
+        <button onclick="editQtyChange(${i}, 1)">+</button>
+      </div>`;
+    listEl.appendChild(row);
+  });
+
+  document.getElementById('editOverlay').classList.add('show');
+}
+
+function editQtyChange(i, delta) {
+  const input = document.getElementById('edit-qty-' + i);
+  let v = Math.max(0, parseInt(input.value || '0', 10) + delta);
+  input.value = v;
+}
+
+function editQtySet(i, val) {
+  let v = parseInt(val, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  document.getElementById('edit-qty-' + i).value = v;
+}
+
+function closeEditModal() {
+  document.getElementById('editOverlay').classList.remove('show');
+  editingId = null;
+}
+
+function saveEdit() {
+  if (!editingId) return;
+  const entry = historyCache.find(h => h.id === editingId);
+  if (!entry) return;
+
+  const newRoom = document.getElementById('editRoomNo').value.trim();
+  const newSteward = document.getElementById('editSteward').value;
+  if (!newRoom) { alert('Room No. cannot be empty.'); return; }
+
+  const newItems = entry.items.map((item, i) => {
+    const val = parseInt(document.getElementById('edit-qty-' + i).value, 10) || 0;
+    return { name: item.name, qty: val };
+  }).filter(item => item.qty > 0);
+
+  if (newItems.length === 0) {
+    if (!confirm('All items set to 0 — this will delete the KOT entry. Continue?')) return;
+    performDelete(editingId);
+    closeEditModal();
+    return;
+  }
+
+  db.collection(KOT_COLLECTION).doc(editingId).update({
+    room: newRoom,
+    steward: newSteward,
+    items: newItems
+  }).catch(err => {
+    console.error('Update failed:', err);
+    alert('Could not save changes. Check your internet connection.');
+  });
+
+  closeEditModal();
+}
+</script>
+
+</body>
+</html>

@@ -496,7 +496,7 @@
     </div>
   </div>
   <div class="ticket-actions">
-    <button class="btn btn-primary" onclick="saveToHistory(); window.print()">🖨️ Print</button>
+    <button class="btn btn-primary" onclick="printAndReset()">🖨️ Print</button>
     <button class="btn btn-secondary" onclick="closeTicket()">Back / Edit</button>
   </div>
 </div>
@@ -764,6 +764,13 @@ function openTicket() {
 
 function closeTicket() {
   document.getElementById('ticketOverlay').classList.remove('show');
+}
+
+function printAndReset() {
+  saveToHistory();
+  window.print();
+  clearAll();
+  closeTicket();
 }
 
 function saveToHistory() {
