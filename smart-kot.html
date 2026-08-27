@@ -462,6 +462,10 @@
     <input type="text" class="search-box" id="searchBox" placeholder="Search item...">
     <div id="menuList"></div>
   </div>
+  <div class="panel" id="selectedPanel" style="display:none;">
+    <div style="font-size:12px; font-weight:700; color:#555; margin-bottom:6px;">SELECTED ITEMS</div>
+    <div id="selectedList" style="font-size:14px; line-height:1.7;"></div>
+  </div>
 </div>
 
 <div class="action-bar">
@@ -711,10 +715,28 @@ function refreshRowState(id) {
 }
 
 function updateCount() {
-  const menuCount = Object.values(qtyState).filter(v => v > 0).length;
-  const customCount = customItems.filter(c => c.qty > 0).length;
-  const total = menuCount + customCount;
+  const selected = [];
+  MENU.forEach(group => {
+    group.items.forEach(name => {
+      const id = slug(name);
+      if (qtyState[id] > 0) selected.push({ name, qty: qtyState[id] });
+    });
+  });
+  customItems.forEach(item => {
+    if (item.qty > 0) selected.push({ name: item.name, qty: item.qty });
+  });
+
+  const total = selected.length;
   document.getElementById('itemCount').textContent = total + ' item' + (total === 1 ? '' : 's') + ' selected';
+
+  const panel = document.getElementById('selectedPanel');
+  const listEl = document.getElementById('selectedList');
+  if (total === 0) {
+    panel.style.display = 'none';
+  } else {
+    panel.style.display = '';
+    listEl.innerHTML = selected.map(s => `<div>${s.name} <strong>× ${s.qty}</strong></div>`).join('');
+  }
 }
 
 function clearAll() {
