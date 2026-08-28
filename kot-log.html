@@ -4,239 +4,180 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sanskar Grand - KOT Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  :root {
+    --paper: #F6EFDD;
+    --paper-raised: #FFFCF4;
+    --ink: #2B2420;
+    --ink-soft: #7C7261;
+    --teal: #1B6459;
+    --teal-deep: #103F38;
+    --teal-tint: #E4F0EC;
+    --gold: #B3873E;
+    --line: #E4D8BE;
+    --brick: #A84332;
+    --brick-soft: #F5E1DA;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes popIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes pulseOnce { 0% { transform: scale(1); } 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: #f2f2f2;
-    color: #1a1a1a;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    margin: 0; padding: 0;
+    background-color: var(--paper);
+    background-image: radial-gradient(circle at 1px 1px, rgba(43,36,32,0.05) 1px, transparent 0);
+    background-size: 22px 22px;
+    color: var(--ink);
   }
 
-  .app {
-    max-width: 700px;
-    margin: 0 auto;
-    padding: 16px;
-  }
+  .btn { transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
+  .btn:active { transform: scale(0.96); }
 
-  .brand {
-    text-align: center;
-    margin-bottom: 14px;
+  .app { max-width: 700px; margin: 0 auto; padding: 18px 16px; }
+
+  .brand { text-align: center; margin-bottom: 6px; animation: popIn .35s ease; }
+  .brand .emblem {
+    width: 46px; height: 46px; margin: 0 auto 8px auto;
+    border-radius: 50%; border: 1.5px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 600; font-size: 17px;
+    color: var(--gold); background: var(--paper-raised);
+    box-shadow: 0 0 0 4px var(--paper), 0 1px 3px rgba(43,36,32,0.15);
   }
-  .brand .name {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: #1d6f66;
-  }
-  .brand .sub {
-    font-size: 12px;
-    color: #555;
-  }
-  #syncStatus {
-    text-align: center;
-    font-size: 11px;
-    color: #999;
-    margin-bottom: 14px;
-  }
+  .brand .name { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 600; letter-spacing: 0.03em; color: var(--teal-deep); }
+  .brand .sub { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.04em; margin-top: 2px; }
+
+  #syncStatus { display: block; text-align: center; font-size: 11px; color: var(--ink-soft); margin: 6px 0 16px 0; }
+  #syncStatus .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 5px; }
+  #syncStatus .dot.err { background: var(--brick); }
+  #syncStatus .dot.pending { background: var(--gold); animation: pulseOnce 1.2s ease-in-out infinite; }
 
   .panel {
-    background: #fff;
-    border-radius: 10px;
-    padding: 14px;
-    margin-bottom: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    background: var(--paper-raised); border: 1px solid var(--line);
+    border-radius: 12px; padding: 14px; margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(43,36,32,0.05);
+    animation: popIn .3s ease;
   }
 
-  .toolbar {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-  }
+  .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
   .toolbar input[type="text"] {
-    flex: 1;
-    min-width: 160px;
-    padding: 9px 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    flex: 1; min-width: 160px; padding: 9px 10px; font-size: 14px;
+    font-family: inherit; border: 1.5px solid var(--line); border-radius: 8px; background: #fff;
   }
   .toolbar select {
-    padding: 9px 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
+    padding: 9px 10px; font-size: 14px; font-family: inherit;
+    border: 1.5px solid var(--line); border-radius: 8px; background: #fff;
   }
+  .toolbar input:focus, .toolbar select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-tint); }
 
-  .summary {
-    font-size: 13px;
-    color: #555;
-    margin-bottom: 12px;
-  }
+  .summary { font-size: 13px; color: var(--ink-soft); margin-bottom: 12px; }
 
   .btn {
-    padding: 10px 16px;
-    font-size: 14px;
-    font-weight: 700;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
+    padding: 10px 16px; font-size: 14px; font-weight: 700;
+    font-family: 'Inter', sans-serif; border: none; border-radius: 8px; cursor: pointer;
   }
-  .btn-primary { background: #1d6f66; color: #fff; }
-  .btn-secondary { background: #eee; color: #333; }
+  .btn-primary { background: var(--gold); color: #241C0F; }
+  .btn-primary:hover { background: #C4954A; }
+  .btn-ghost { background: transparent; color: var(--teal-deep); border: 1.5px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--teal); }
 
   .entry {
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
+    border: 1px solid var(--line); background: #fff; border-radius: 10px;
+    padding: 10px 12px; margin-bottom: 8px; animation: popIn .2s ease;
   }
-  .entry .e-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    font-weight: 700;
-    margin-bottom: 4px;
+  .entry .e-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+  .entry .e-type {
+    display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; padding: 2px 7px; border-radius: 999px;
+    background: var(--teal-tint); color: var(--teal-deep); margin-right: 6px;
   }
-  .entry .e-meta {
-    font-size: 12px;
-    color: #777;
-    margin-bottom: 6px;
+  .entry .e-meta { font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
+  .entry .e-items { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
+  .e-chip {
+    font-family: 'JetBrains Mono', monospace; font-size: 11.5px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 999px;
+    padding: 3px 9px; color: var(--ink);
   }
-  .entry .e-items {
-    font-size: 13px;
-    color: #333;
-    line-height: 1.5;
-  }
-  .entry .e-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 8px;
-  }
+  .entry .e-remarks { font-size: 12px; color: var(--brick); background: var(--brick-soft); border-radius: 6px; padding: 5px 8px; margin-top: 6px; }
+  .entry .e-actions { display: flex; gap: 8px; margin-top: 8px; }
   .e-actions button {
-    font-size: 12px;
-    padding: 5px 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    background: #f5f5f5;
-    cursor: pointer;
+    font-size: 12px; font-family: 'Inter', sans-serif; padding: 5px 10px;
+    border-radius: 6px; border: 1px solid var(--line); background: var(--paper); cursor: pointer;
   }
-  .e-actions button.danger { color: #b23b3b; border-color: #e3b6b6; }
-  .e-actions button.edit { color: #1d6f66; border-color: #a9d3ce; }
+  .e-actions button.danger { color: var(--brick); border-color: #E3B6B6; }
+  .e-actions button.edit { color: var(--teal-deep); border-color: #A9D3CE; }
 
-  .empty {
-    text-align: center;
-    color: #888;
-    font-size: 14px;
-    padding: 30px 0;
-  }
+  .empty { text-align: center; color: var(--ink-soft); font-size: 14px; padding: 30px 0; }
+  .footer-actions { text-align: center; margin-top: 10px; }
 
-  .footer-actions {
-    text-align: center;
-    margin-top: 10px;
-  }
-
-  /* ===== Modals ===== */
   #passwordOverlay, #editOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.55);
-    z-index: 300;
-    align-items: center;
-    justify-content: center;
-    padding: 16px;
+    display: none; position: fixed; inset: 0;
+    background: rgba(20,16,10,0.55); z-index: 300;
+    align-items: center; justify-content: center; padding: 16px;
   }
-  #passwordOverlay.show, #editOverlay.show { display: flex; }
+  #passwordOverlay.show, #editOverlay.show { display: flex; animation: fadeIn .18s ease; }
 
   .small-panel {
-    background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    max-width: 340px;
-    width: 100%;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px; max-width: 340px; width: 100%; animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
   }
-  .small-panel h3 { margin: 0 0 10px 0; font-size: 16px; color: #1d6f66; }
+  .small-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 17px; font-weight: 600; color: var(--teal-deep); }
   .small-panel input[type="password"], .small-panel input[type="text"] {
-    width: 100%;
-    padding: 10px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 10px;
+    width: 100%; padding: 10px 11px; font-size: 15px; font-family: inherit;
+    border: 1.5px solid var(--line); border-radius: 8px; margin-bottom: 10px;
   }
-  .small-panel .err {
-    color: #b23b3b;
-    font-size: 12px;
-    margin: -4px 0 10px 0;
-    display: none;
-  }
-  .small-panel .modal-actions {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-  }
+  .small-panel input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-tint); }
+  .small-panel .err { color: var(--brick); font-size: 12px; margin: -4px 0 10px 0; display: none; }
+  .small-panel .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
 
   .edit-panel {
-    background: #fff;
-    border-radius: 10px;
-    padding: 18px;
-    max-width: 420px;
-    width: 100%;
-    max-height: 85vh;
-    overflow-y: auto;
+    background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px;
+    padding: 20px; max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto;
+    animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
   }
-  .edit-panel h3 { margin: 0 0 12px 0; font-size: 16px; color: #1d6f66; }
+  .edit-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: var(--teal-deep); }
   .edit-panel label {
-    display: block;
-    font-size: 12px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 4px;
+    display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 5px;
   }
-  .edit-panel input[type="text"], .edit-panel select {
-    width: 100%;
-    padding: 9px 10px;
-    font-size: 15px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 10px;
+  .edit-panel input[type="text"], .edit-panel select, .edit-panel textarea {
+    width: 100%; padding: 9px 10px; font-size: 15px; font-family: inherit;
+    border: 1.5px solid var(--line); border-radius: 8px; margin-bottom: 10px;
   }
-  .edit-item-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 7px 0;
-    border-bottom: 1px solid #eee;
-    gap: 8px;
-  }
+  .edit-panel textarea { resize: vertical; min-height: 44px; }
+  .edit-item-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--line); gap: 8px; }
   .edit-item-row .item-name { font-size: 13px; flex: 1; }
-  .qty-control { display: flex; align-items: center; gap: 6px; }
-  .qty-control button {
-    width: 30px; height: 30px; border-radius: 6px; border: 1px solid #ccc;
-    background: #f5f5f5; font-size: 16px; font-weight: 700; cursor: pointer; color: #1d6f66;
-  }
-  .qty-control input {
-    width: 40px; text-align: center; font-size: 15px; padding: 5px 2px;
-    border: 1px solid #ccc; border-radius: 6px;
-  }
+  .qty-control { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; padding: 2px; }
+  .qty-control button { width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; font-size: 16px; font-weight: 700; cursor: pointer; color: var(--teal); font-family: 'JetBrains Mono', monospace; }
+  .qty-control input { width: 34px; text-align: center; font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 4px 0; border: none; background: transparent; color: var(--ink); }
+  .qty-control input:focus { outline: none; }
 </style>
 </head>
 <body>
 
 <div class="app">
   <div class="brand">
-    <div class="name">SANSKAR GRAND</div>
-    <div class="sub">by Maan — KOT Log</div>
+    <div class="emblem">SG</div>
+    <div class="name">Sanskar Grand</div>
+    <div class="sub">BY MAAN · KOT LOG</div>
   </div>
-  <div id="syncStatus">Connecting…</div>
+  <span id="syncStatus"><span class="dot pending"></span>Connecting…</span>
 
   <div class="panel">
     <div class="toolbar">
-      <input type="text" id="searchBox" placeholder="Search room, steward, or item...">
+      <input type="text" id="searchBox" placeholder="Search room/table, steward, or item...">
+      <select id="typeFilter">
+        <option value="">All Types</option>
+        <option value="room">Room Service</option>
+        <option value="restaurant">Restaurant</option>
+      </select>
       <select id="dateFilter">
         <option value="">All dates</option>
         <option value="today">Today only</option>
@@ -245,7 +186,7 @@
     <div class="summary" id="summary"></div>
     <div id="list"></div>
     <div class="footer-actions">
-      <button class="btn btn-secondary" onclick="requestUnlock('clearAll', null)">Clear All Log</button>
+      <button class="btn btn-ghost" onclick="requestUnlock('clearAll', null)">Clear All Log</button>
     </div>
   </div>
 </div>
@@ -256,7 +197,7 @@
     <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
     <div class="err" id="pwError">Incorrect password. Try again.</div>
     <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+      <button class="btn btn-ghost" onclick="closePasswordModal()">Cancel</button>
       <button class="btn btn-primary" onclick="checkPassword()">Confirm</button>
     </div>
   </div>
@@ -264,8 +205,8 @@
 
 <div id="editOverlay">
   <div class="edit-panel">
-    <h3>Edit KOT — Room <span id="editRoomLabel"></span></h3>
-    <label>Room No.</label>
+    <h3 id="editHeader">Edit KOT</h3>
+    <label id="editRoomFieldLabel">Room No.</label>
     <input type="text" id="editRoomNo">
     <label>Steward</label>
     <select id="editSteward">
@@ -274,8 +215,10 @@
       <option>Sohan</option>
     </select>
     <div id="editItemsList"></div>
+    <label style="margin-top:10px;">Remarks for Chef</label>
+    <textarea id="editRemarks" rows="2" placeholder="e.g. less spicy, no onion..."></textarea>
     <div class="modal-actions" style="margin-top:14px;">
-      <button class="btn btn-secondary" onclick="closeEditModal()">Cancel</button>
+      <button class="btn btn-ghost" onclick="closeEditModal()">Cancel</button>
       <button class="btn btn-primary" onclick="saveEdit()">Save Changes</button>
     </div>
   </div>
@@ -294,32 +237,37 @@ let historyCache = [];
 let pendingAction = null;
 let editingId = null;
 
+function setSyncStatus(text, state) {
+  document.getElementById('syncStatus').innerHTML = `<span class="dot ${state || ''}"></span>${text}`;
+}
+
 firebase.auth().signInAnonymously().catch(err => {
   console.error('Anonymous sign-in failed:', err);
-  document.getElementById('syncStatus').textContent = 'Sync error — check Firebase setup';
+  setSyncStatus('Sync error — check Firebase setup', 'err');
 });
 
 firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById('syncStatus').textContent = 'Synced';
-    db.collection(KOT_COLLECTION).orderBy('createdAt', 'desc')
-      .onSnapshot(snapshot => {
-        historyCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-        render();
-      }, err => {
-        console.error('History sync error:', err);
-        document.getElementById('syncStatus').textContent = 'Sync error — check Firestore rules';
-      });
-  }
+  if (!user) return;
+  setSyncStatus('Synced');
+  db.collection(KOT_COLLECTION).orderBy('createdAt', 'desc')
+    .onSnapshot(snapshot => {
+      historyCache = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      render();
+    }, err => {
+      console.error('History sync error:', err);
+      setSyncStatus('Sync error — check Firestore rules', 'err');
+    });
 });
 
 function render() {
   const todayStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
   const term = document.getElementById('searchBox').value.toLowerCase().trim();
+  const typeFilter = document.getElementById('typeFilter').value;
   const dateFilter = document.getElementById('dateFilter').value;
 
   let filtered = historyCache;
   if (dateFilter === 'today') filtered = filtered.filter(h => h.date === todayStr);
+  if (typeFilter) filtered = filtered.filter(h => (h.type || 'room') === typeFilter);
   if (term) {
     filtered = filtered.filter(h =>
       h.room.toLowerCase().includes(term) ||
@@ -342,13 +290,18 @@ function render() {
   }
 
   filtered.forEach(entry => {
-    const itemsText = entry.items.map(i => `${i.name} × ${i.qty}`).join(', ');
+    const type = entry.type || 'room';
+    const typeLabel = type === 'restaurant' ? 'Restaurant' : 'Room Service';
+    const placeLabel = type === 'restaurant' ? 'Table' : 'Room';
+    const chips = entry.items.map(i => `<span class="e-chip">${i.name} ×${i.qty}</span>`).join('');
+    const remarksHtml = entry.remarks ? `<div class="e-remarks">Remarks: ${entry.remarks}</div>` : '';
     const div = document.createElement('div');
     div.className = 'entry';
     div.innerHTML = `
-      <div class="e-top"><span>Room ${entry.room}</span><span>${entry.date} · ${entry.time}</span></div>
+      <div class="e-top"><span><span class="e-type">${typeLabel}</span>${placeLabel} ${entry.room}</span><span>${entry.date} · ${entry.time}</span></div>
       <div class="e-meta">Steward: ${entry.steward}</div>
-      <div class="e-items">${itemsText}</div>
+      <div class="e-items">${chips}</div>
+      ${remarksHtml}
       <div class="e-actions">
         <button class="edit" onclick="requestUnlock('edit', '${entry.id}')">✏️ Edit</button>
         <button class="danger" onclick="requestUnlock('delete', '${entry.id}')">🗑️ Delete</button>
@@ -358,6 +311,7 @@ function render() {
 }
 
 document.getElementById('searchBox').addEventListener('input', render);
+document.getElementById('typeFilter').addEventListener('change', render);
 document.getElementById('dateFilter').addEventListener('change', render);
 
 /* ===== Password gate ===== */
@@ -416,9 +370,13 @@ function openEditModal(id) {
   if (!entry) return;
   editingId = id;
 
-  document.getElementById('editRoomLabel').textContent = entry.room;
+  const type = entry.type || 'room';
+  const placeLabel = type === 'restaurant' ? 'Table' : 'Room';
+  document.getElementById('editHeader').textContent = `Edit KOT — ${placeLabel} ${entry.room}`;
+  document.getElementById('editRoomFieldLabel').textContent = type === 'restaurant' ? 'Table No.' : 'Room No.';
   document.getElementById('editRoomNo').value = entry.room;
   document.getElementById('editSteward').value = entry.steward;
+  document.getElementById('editRemarks').value = entry.remarks || '';
 
   const listEl = document.getElementById('editItemsList');
   listEl.innerHTML = '';
@@ -463,7 +421,8 @@ function saveEdit() {
 
   const newRoom = document.getElementById('editRoomNo').value.trim();
   const newSteward = document.getElementById('editSteward').value;
-  if (!newRoom) { alert('Room No. cannot be empty.'); return; }
+  const newRemarks = document.getElementById('editRemarks').value.trim();
+  if (!newRoom) { alert('This field cannot be empty.'); return; }
 
   const newItems = entry.items.map((item, i) => {
     const val = parseInt(document.getElementById('edit-qty-' + i).value, 10) || 0;
@@ -480,7 +439,8 @@ function saveEdit() {
   db.collection(KOT_COLLECTION).doc(editingId).update({
     room: newRoom,
     steward: newSteward,
-    items: newItems
+    items: newItems,
+    remarks: newRemarks
   }).catch(err => {
     console.error('Update failed:', err);
     alert('Could not save changes. Check your internet connection.');
