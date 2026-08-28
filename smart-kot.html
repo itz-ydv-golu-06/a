@@ -273,10 +273,11 @@
   }
   .quick-add-row {
     display: grid;
-    grid-template-columns: 2fr 1fr auto;
+    grid-template-columns: 1fr 56px auto;
     gap: 8px;
     margin-bottom: 12px;
   }
+  .quick-add-row input[type="number"] { padding-left: 6px; padding-right: 6px; text-align: center; }
   .bubble-list { display: flex; flex-wrap: wrap; gap: 8px; min-height: 34px; margin-bottom: 4px; }
   .bubble-empty { font-size: 13px; color: var(--ink-soft); font-style: italic; padding: 6px 2px; }
   .bubble {
