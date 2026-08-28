@@ -50,6 +50,40 @@
   .item-row { transition: background-color .2s ease; }
 
   /* ============ CONTROLS (screen only) ============ */
+  /* ============ LAYOUT ============ */
+  .layout {
+    display: flex;
+    gap: 20px;
+    max-width: 1040px;
+    margin: 0 auto;
+    padding: 18px 16px 90px 16px;
+    align-items: flex-start;
+  }
+  .main-col { flex: 1; min-width: 0; }
+  .side-col { width: 340px; flex-shrink: 0; position: sticky; top: 20px; }
+  .side-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed var(--line);
+  }
+  .side-actions .count {
+    font-size: 12.5px; font-weight: 600; color: var(--ink-soft);
+    margin-bottom: 8px; text-align: center;
+  }
+  .side-actions .buttons { display: flex; gap: 10px; }
+  .side-actions .btn-primary { flex: 1; justify-content: center; }
+  .side-actions .btn-ghost { background: transparent; color: var(--brick); border: 1.5px solid var(--brick-soft); }
+  .side-actions .btn-ghost:hover { border-color: var(--brick); }
+
+  @media (max-width: 860px) {
+    .layout { flex-direction: column; }
+    .side-col { width: 100%; position: static; }
+    .side-actions { display: none; }
+  }
+  @media (min-width: 861px) {
+    .action-bar { display: none; }
+  }
+
   .app {
     max-width: 640px;
     margin: 0 auto;
@@ -440,7 +474,8 @@
 </head>
 <body>
 
-<div class="app">
+<div class="layout">
+<div class="main-col">
   <div class="brand">
     <div class="emblem">SG</div>
     <div class="name">Sanskar Grand</div>
@@ -492,7 +527,9 @@
     </div>
     <div id="menuList"></div>
   </div>
+</div>
 
+<div class="side-col">
   <div class="panel" id="orderPanel">
     <div class="order-title">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
@@ -511,7 +548,16 @@
       <label style="display:block;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--ink-soft);margin-bottom:5px;">Remarks for Chef (optional)</label>
       <textarea id="orderRemarks" rows="2" placeholder="e.g. less spicy, no onion, extra napkins..."></textarea>
     </div>
+
+    <div class="side-actions">
+      <div class="count" id="itemCountSide">0 items selected</div>
+      <div class="buttons">
+        <button class="btn btn-ghost" onclick="clearAll()">Clear</button>
+        <button class="btn btn-primary" onclick="openTicket()">Generate KOT</button>
+      </div>
+    </div>
   </div>
+</div>
 </div>
 
 <div class="action-bar">
@@ -862,7 +908,10 @@ function removeSelected(id, source) {
 function updateCount() {
   const selected = getSelectedItems();
   const total = selected.length;
-  document.getElementById('itemCount').textContent = total + ' item' + (total === 1 ? '' : 's') + ' selected';
+  const countText = total + ' item' + (total === 1 ? '' : 's') + ' selected';
+  document.getElementById('itemCount').textContent = countText;
+  const sideCount = document.getElementById('itemCountSide');
+  if (sideCount) sideCount.textContent = countText;
 
   const listEl = document.getElementById('selectedList');
   if (total === 0) {
