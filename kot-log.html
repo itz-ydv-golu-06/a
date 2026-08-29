@@ -10,9 +10,31 @@
 <style>
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
+
+  /* Dark theme is the default */
   :root {
+    --paper: #17130F;
+    --paper-raised: #241E17;
+    --surface: #2B241C;
+    --ink: #F1E9DA;
+    --ink-soft: #A69884;
+    --teal: #2FA491;
+    --teal-deep: #0E2B26;
+    --teal-tint: #17332E;
+    --gold: #D9AA5E;
+    --line: #3C332A;
+    --brick: #E2695A;
+    --brick-soft: #3A211D;
+    --danger-border: #6B3A34;
+    --edit-border: #2E5A52;
+    --grain: rgba(255,255,255,0.035);
+    --heading: #5FCDB5;
+  }
+
+  :root[data-theme="light"] {
     --paper: #F6EFDD;
     --paper-raised: #FFFCF4;
+    --surface: #FFFFFF;
     --ink: #2B2420;
     --ink-soft: #7C7261;
     --teal: #1B6459;
@@ -22,6 +44,10 @@
     --line: #E4D8BE;
     --brick: #A84332;
     --brick-soft: #F5E1DA;
+    --danger-border: #E3B6B6;
+    --edit-border: #A9D3CE;
+    --grain: rgba(43,36,32,0.05);
+    --heading: #103F38;
   }
 
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
@@ -32,10 +58,28 @@
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     margin: 0; padding: 0;
     background-color: var(--paper);
-    background-image: radial-gradient(circle at 1px 1px, rgba(43,36,32,0.05) 1px, transparent 0);
+    background-image: radial-gradient(circle at 1px 1px, var(--grain) 1px, transparent 0);
     background-size: 22px 22px;
     color: var(--ink);
+    transition: background-color .25s ease, color .25s ease;
   }
+
+  .theme-toggle {
+    position: fixed;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--paper-raised);
+    color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 400;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: border-color .15s ease;
+  }
+  .theme-toggle:hover { border-color: var(--gold); }
+  .theme-toggle:active svg { transform: rotate(20deg) scale(0.9); }
 
   .btn { transition: background-color .15s ease, color .15s ease, border-color .15s ease, transform .1s ease; }
   .btn:active { transform: scale(0.96); }
@@ -51,7 +95,7 @@
     color: var(--gold); background: var(--paper-raised);
     box-shadow: 0 0 0 4px var(--paper), 0 1px 3px rgba(43,36,32,0.15);
   }
-  .brand .name { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 600; letter-spacing: 0.03em; color: var(--teal-deep); }
+  .brand .name { font-family: 'Fraunces', serif; font-size: 23px; font-weight: 600; letter-spacing: 0.03em; color: var(--heading); }
   .brand .sub { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.04em; margin-top: 2px; }
 
   #syncStatus { display: block; text-align: center; font-size: 11px; color: var(--ink-soft); margin: 6px 0 16px 0; }
@@ -69,11 +113,11 @@
   .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
   .toolbar input[type="text"] {
     flex: 1; min-width: 160px; padding: 9px 10px; font-size: 14px;
-    font-family: inherit; border: 1.5px solid var(--line); border-radius: 8px; background: #fff;
+    font-family: inherit; border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink);
   }
   .toolbar select {
     padding: 9px 10px; font-size: 14px; font-family: inherit;
-    border: 1.5px solid var(--line); border-radius: 8px; background: #fff;
+    border: 1.5px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink);
   }
   .toolbar input:focus, .toolbar select:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-tint); }
 
@@ -85,18 +129,18 @@
   }
   .btn-primary { background: var(--gold); color: #241C0F; }
   .btn-primary:hover { background: #C4954A; }
-  .btn-ghost { background: transparent; color: var(--teal-deep); border: 1.5px solid var(--line); }
+  .btn-ghost { background: transparent; color: var(--heading); border: 1.5px solid var(--line); }
   .btn-ghost:hover { border-color: var(--teal); }
 
   .entry {
-    border: 1px solid var(--line); background: #fff; border-radius: 10px;
+    border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
     padding: 10px 12px; margin-bottom: 8px; animation: popIn .2s ease;
   }
   .entry .e-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
   .entry .e-type {
     display: inline-block; font-size: 10.5px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .04em; padding: 2px 7px; border-radius: 999px;
-    background: var(--teal-tint); color: var(--teal-deep); margin-right: 6px;
+    background: var(--teal-tint); color: var(--heading); margin-right: 6px;
   }
   .entry .e-meta { font-size: 12px; color: var(--ink-soft); margin-bottom: 6px; }
   .entry .e-items { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 4px; }
@@ -111,8 +155,8 @@
     font-size: 12px; font-family: 'Inter', sans-serif; padding: 5px 10px;
     border-radius: 6px; border: 1px solid var(--line); background: var(--paper); cursor: pointer;
   }
-  .e-actions button.danger { color: var(--brick); border-color: #E3B6B6; }
-  .e-actions button.edit { color: var(--teal-deep); border-color: #A9D3CE; }
+  .e-actions button.danger { color: var(--brick); border-color: var(--danger-border); }
+  .e-actions button.edit { color: var(--heading); border-color: var(--edit-border); }
 
   .empty { text-align: center; color: var(--ink-soft); font-size: 14px; padding: 30px 0; }
   .footer-actions { text-align: center; margin-top: 10px; }
@@ -128,10 +172,11 @@
     background: var(--paper-raised); border: 1px solid var(--line); border-radius: 14px;
     padding: 20px; max-width: 340px; width: 100%; animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
   }
-  .small-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 17px; font-weight: 600; color: var(--teal-deep); }
+  .small-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 17px; font-weight: 600; color: var(--heading); }
   .small-panel input[type="password"], .small-panel input[type="text"] {
     width: 100%; padding: 10px 11px; font-size: 15px; font-family: inherit;
     border: 1.5px solid var(--line); border-radius: 8px; margin-bottom: 10px;
+    background: var(--surface); color: var(--ink);
   }
   .small-panel input:focus { outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-tint); }
   .small-panel .err { color: var(--brick); font-size: 12px; margin: -4px 0 10px 0; display: none; }
@@ -142,7 +187,7 @@
     padding: 20px; max-width: 420px; width: 100%; max-height: 85vh; overflow-y: auto;
     animation: popIn .22s cubic-bezier(.34,1.56,.64,1);
   }
-  .edit-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: var(--teal-deep); }
+  .edit-panel h3 { font-family: 'Fraunces', serif; margin: 0 0 12px 0; font-size: 16px; font-weight: 600; color: var(--heading); }
   .edit-panel label {
     display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.06em; color: var(--ink-soft); margin-bottom: 5px;
@@ -150,17 +195,28 @@
   .edit-panel input[type="text"], .edit-panel select, .edit-panel textarea {
     width: 100%; padding: 9px 10px; font-size: 15px; font-family: inherit;
     border: 1.5px solid var(--line); border-radius: 8px; margin-bottom: 10px;
+    background: var(--surface); color: var(--ink);
   }
   .edit-panel textarea { resize: vertical; min-height: 44px; }
   .edit-item-row { display: flex; align-items: center; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid var(--line); gap: 8px; }
   .edit-item-row .item-name { font-size: 13px; flex: 1; }
-  .qty-control { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; padding: 2px; }
+  .qty-control { display: flex; align-items: center; gap: 0; border: 1.5px solid var(--line); border-radius: 999px; background: var(--surface); padding: 2px; }
   .qty-control button { width: 28px; height: 28px; border-radius: 50%; border: none; background: transparent; font-size: 16px; font-weight: 700; cursor: pointer; color: var(--teal); font-family: 'JetBrains Mono', monospace; }
   .qty-control input { width: 34px; text-align: center; font-size: 14px; font-weight: 700; font-family: 'JetBrains Mono', monospace; padding: 4px 0; border: none; background: transparent; color: var(--ink); }
   .qty-control input:focus { outline: none; }
 </style>
+<script>
+  (function() {
+    var saved = localStorage.getItem('sanskarKotTheme');
+    document.documentElement.setAttribute('data-theme', saved === 'light' ? 'light' : 'dark');
+  })();
+</script>
 </head>
 <body>
+
+<button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle dark/light mode">
+  <svg id="themeToggleIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></svg>
+</button>
 
 <div class="app">
   <div class="brand">
@@ -448,6 +504,23 @@ function saveEdit() {
 
   closeEditModal();
 }
+
+/* ===== Theme (dark default, shared preference with smart-kot.html) ===== */
+const SUN_ICON = '<circle cx="12" cy="12" r="4"></circle><line x1="12" y1="2" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.07" y2="4.93"></line>';
+const MOON_ICON = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>';
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem('sanskarKotTheme', theme);
+  document.getElementById('themeToggleIcon').innerHTML = theme === 'dark' ? SUN_ICON : MOON_ICON;
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') || 'dark';
+  applyTheme(current === 'dark' ? 'light' : 'dark');
+}
+
+applyTheme(document.documentElement.getAttribute('data-theme') || 'dark');
 </script>
 
 </body>
